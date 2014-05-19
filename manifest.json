@@ -1,0 +1,46 @@
+{
+    "manifest_version": 2,
+
+    "name": "Collab",
+    "description": "Work collaboratively offline using this app.",
+    "version": "1",
+
+    "app": {
+        "background": {
+            "scripts": [
+                "components/networking.js",
+                "background.js"
+            ]
+        }
+    },
+
+    "sockets": {
+        "udp": {
+            "send": "",
+            "bind": "",
+            "listen": ""
+        },
+        "tcp": {
+            "connect": "",
+            "send": "",
+            "bind": "",
+            "listen": ""
+        },
+        "tcpServer": {
+            "listen": ["*"],
+            "connect": ["*"],
+            "send": ["*"],
+            "bind": ["*"]
+        }
+    },
+
+    "permissions": [
+        "system.network",
+        {
+            "socket": [
+                "udp-send-to"
+            ]
+        }
+    ]
+
+}
