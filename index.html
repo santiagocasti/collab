@@ -1,0 +1,42 @@
+<html data-ng-app="collabApp">
+<head>
+    <title>Collab</title>
+    <link rel="stylesheet" media="all" href="css/bootstrap.css">
+    <link rel="stylesheet" media="all" href="css/main.css">
+</head>
+<body data-ng-controller="InteractionCtrl">
+<section id="main">
+    <nav>
+        <h2>Collab</h2>
+    </nav>
+    <table>
+        <thead>
+            <tr>
+                <th>A</th>
+                <th>B</th>
+                <th>C</th>
+                <th>D</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr data-ng-repeat="row in rows">
+            <td data-ng-repeat="cell in row.cells">{{cell.value}}</td>
+        </tr>
+        </tbody>
+    </table>
+    <div>
+        Send: <input type="text" ng-model="messageContent">
+        <button class="btn" data-ng-click="sendMessage()">Refresh</button>
+    </div>
+
+    <!--<ul>-->
+        <!--<li data-ng-repeat="msg in msgs">-->
+            <!--{{msg.id}} {{msg.from}}-->
+            <!--<span class="text">{{msg.content}}</span>-->
+        <!--</li>-->
+    <!--</ul>-->
+</section>
+<script src="node_modules/angularjs-1.2.16.js" type="text/javascript"></script>
+<script src="components/interactionLogic.js" type="text/javascript"></script>
+</body>
+</html>
