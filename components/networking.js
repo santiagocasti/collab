@@ -91,7 +91,7 @@ function Socket(id, port, protocol) {
 }
 
 /**
- * 
+ *
  * @param ip
  * @param netmask
  * @param name
