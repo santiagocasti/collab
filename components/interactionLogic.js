@@ -11,14 +11,16 @@ app.controller('InteractionCtrl', function ($scope) {
     $scope.messageContent = 'content';
 
     $scope.addRow = function () {
-        $scope.rows[$scope.rows.length] = {
-            'cells': [
-                {'value': 'a'},
-                {'value': 'b'},
-                {'value': 'c'},
-                {'value': 'd'}
-            ]
-        }
+//        $scope.rows[$scope.rows.length] = {
+//            'cells': [
+//                {'value': $scope.rows.length + 1},
+//                {'value': 'from'},
+//                {'value': 'to'},
+//                {'value': $scope.messageContent}
+//            ]
+//        }
+
+        $scope.sendMessage();
     }
 
     //    {'name': 'Nexus S',
@@ -41,6 +43,40 @@ app.controller('InteractionCtrl', function ($scope) {
     };
 
     $scope.sendMessage = function () {
-        console.log("Message is: "+$scope.messageContent);
+        var msg = MessagePassing.MessageToBack(MessagePassing.MessageTypes.NEW_DATA_CREATED, $scope.messageContent);
+        console.log("About to send from frontend:");
+        console.log(msg);
+        var fem = FrontEndMessaging.getInstance();
+        fem.sendMessage(msg);
+        $scope.addMessage(msg);
     }
+
+    $scope.addMessage = function (message) {
+        $scope.rows[$scope.rows.length] = {
+            'cells': [
+                {'value': $scope.rows.length + 1},
+                {'value': message.from},
+                {'value': message.to},
+                {'value': message.content}
+            ]
+        }
+    }
+
+    $scope.handleMessage = function (message) {
+        console.log("We are in InteractionLogic handle Message");
+        console.log(message);
+        $scope.addMessage(message);
+        $scope.$apply();
+    }
+
+    var fem = FrontEndMessaging.getInstance();
+    fem.addCallbackForEvent(FrontEndMessaging.EventType.NEW_DATA, $scope.handleMessage);
 });
+
+function callback_fy6fhP17Zt2g(message, sender, sendResponse) {
+    var fem = FrontEndMessaging.getInstance();
+    fem.handleMessage(message, sender, sendResponse);
+}
+
+chrome.runtime.onMessage.addListener(callback_fy6fhP17Zt2g);
+
