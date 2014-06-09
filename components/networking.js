@@ -249,10 +249,10 @@ var Network = (function () {
                 return;
             }
 
-            debug("We have the following messages");
-            pendingMessages.forEach(function (msg) {
-                log("", msg);
-            });
+//            debug("We have the following messages");
+//            pendingMessages.forEach(function (msg) {
+//                log("", msg);
+//            });
 
             UDP_CREATED = value;
             UDP_MULTICAST_CREATED = value;
@@ -261,7 +261,7 @@ var Network = (function () {
                 sendUDPMessage(msg.ip, msg.port, msg);
             });
 
-            pendingMulticastMessages.foreach(function(msg){
+            pendingMulticastMessages.forEach(function(msg){
                 sendMulticastMessage(msg.ip, msg.port, msg, msg.callback);
             })
         }
@@ -346,7 +346,7 @@ var Network = (function () {
                             multicastSocket = socket;
 
                             // Join the multicast group where replication occurs
-                            chrome.sockets.udp.joinGroup(socketId, multicastIp, function (result) {
+                            chrome.sockets.udp.joinGroup(socketId, ReplicationP.MulticastIP, function (result) {
 
                                 if (result < 0) {
                                     handleSocketCreationError(result, 5);
@@ -357,7 +357,7 @@ var Network = (function () {
 
                                 // Debugging: list the multicast groups joined
                                 chrome.sockets.udp.getJoinedGroups(socketId, function (val) {
-                                    console.log("[" + socketId + "] joined groups for ip " + multicastIp + " [sockeId:" + socketId + "]");
+                                    console.log("[" + socketId + "] joined groups for ip " + ReplicationP.MulticastIP + " [sockeId:" + socketId + "]");
                                     console.log(val);
                                 });
 
@@ -481,7 +481,7 @@ var Network = (function () {
              */
             sendMulticastMessage: function (multicastIp, port, messageObj, callback) {
 
-                if (UDP_CREATED == false) {
+                if (UDP_MULTICAST_CREATED == false) {
                     debug("Trying to send multicast message, but no UDP socket created. Queueing the message.");
                     messageObj.ip = ip;
                     messageObj.port = port;
@@ -519,7 +519,7 @@ var Network = (function () {
 
                     if (allCreated) {
                         debug("All network interfaces DO have a socket of type[" + type + "]");
-                        setUDPMulticastCreatedFlag(true);
+                        setUDPCreatedFlag(true);
                     } else {
                         debug("All network interfaces DO NOT have a socket of type[" + type + "]");
                     }
