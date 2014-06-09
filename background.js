@@ -20,8 +20,8 @@ promise.then(function () {
         ReplicationController.HandleMessage(data);
     });
 
-    log("Starting the socket creation part....");
-    return n.createSocket(n.UDP_TYPE, 1234, replicationDataReceived);
+    debug("Starting the socket creation part....");
+    return n.createMulticastSocket(n.UDP_TYPE, ReplicationP.Port, replicationDataReceived);
 });
 
 
