@@ -24,19 +24,10 @@ var ReplicationController = (function () {
             debug("Replication Controller handle message: ", rawMsg);
 
             var repMsg = Message.CreateFromRawData(ReplicationP.MessageTypes.IN, rawMsg.data);
-            debug("Replication message:", repMsg);
+            debug("Replication message received:", repMsg);
 
-
-            var content = repMsg.getContent();
-            content.remoteAddress = rawMsg.remoteAddress;
-            content.remotePort = rawMsg.remotePort;
-            debug("Final payload to be sent:", content);
-            // create a message for the message passing interface
-            var msgMsgPassing = MessagePassing.MessageToFront(MessagePassing.MessageTypes.NEW_DATA_AVAILABLE, content);
-            debug("Message for frontend: ", msgMsgPassing);
-
-            // send the new data to the frontend
-            BackEndMessaging.sendMessage(msgMsgPassing);
+            var appController = ApplicationController.getInstance();
+            appController.newDataReceived(repMsg);
         }
     };
 })();
