@@ -33,8 +33,9 @@ var ApplicationController = (function () {
         /**
          * Process data received through the replication protocol
          * @param repMsg
+         * @param rawMsg
          */
-        function processReceivedData(repMsg) {
+        function processReceivedData(repMsg, rawMsg) {
 
             // create the content
             var content = repMsg.getContent();
@@ -60,8 +61,8 @@ var ApplicationController = (function () {
                 processCreatedData(msg);
             },
 
-            newDataReceived: function (msg) {
-                processReceivedData(msg);
+            newDataReceived: function (msg, rawMsg) {
+                processReceivedData(msg, rawMsg);
             }
 
         };
