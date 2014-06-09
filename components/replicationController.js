@@ -27,7 +27,7 @@ var ReplicationController = (function () {
             debug("Replication message received:", repMsg);
 
             var appController = ApplicationController.getInstance();
-            appController.newDataReceived(repMsg);
+            appController.newDataReceived(repMsg, rawMsg);
         }
     };
 })();
