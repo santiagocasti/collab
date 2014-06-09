@@ -8,7 +8,13 @@
     "app": {
         "background": {
             "scripts": [
+                "components/loggingUtils.js",
                 "components/networking.js",
+                "components/messagePassingCommons.js",
+                "components/backEndMessaging.js",
+                "components/replicationController.js",
+                "components/applicationController.js",
+                "components/context.js",
                 "background.js"
             ]
         }
@@ -16,21 +22,11 @@
 
     "sockets": {
         "udp": {
-            "send": "",
+            "multicastMembership": "",
+            "multicastmembership": "",
             "bind": "",
-            "listen": ""
-        },
-        "tcp": {
-            "connect": "",
             "send": "",
-            "bind": "",
-            "listen": ""
-        },
-        "tcpServer": {
-            "listen": ["*"],
-            "connect": ["*"],
-            "send": ["*"],
-            "bind": ["*"]
+            "multicast-membership" : ""
         }
     },
 
