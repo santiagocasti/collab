@@ -9,14 +9,18 @@
     <nav>
         <h2>Collab</h2>
     </nav>
-    <table>
+    <div>
+        Send: <input type="text" ng-model="messageContent">
+        <button class="btn" data-ng-click="addRow()">Send</button>
+    </div>
+    <table style="width: 70%">
         <thead>
-            <tr>
-                <th>A</th>
-                <th>B</th>
-                <th>C</th>
-                <th>D</th>
-            </tr>
+        <tr>
+            <th style="width: 10%">ID</th>
+            <th style="width: 15%">From</th>
+            <th style="width: 15%">To</th>
+            <th style="width: 60%">Message</th>
+        </tr>
         </thead>
         <tbody>
         <tr data-ng-repeat="row in rows">
@@ -24,19 +28,18 @@
         </tr>
         </tbody>
     </table>
-    <div>
-        Send: <input type="text" ng-model="messageContent">
-        <button class="btn" data-ng-click="sendMessage()">Refresh</button>
-    </div>
+
 
     <!--<ul>-->
-        <!--<li data-ng-repeat="msg in msgs">-->
-            <!--{{msg.id}} {{msg.from}}-->
-            <!--<span class="text">{{msg.content}}</span>-->
-        <!--</li>-->
+    <!--<li data-ng-repeat="msg in msgs">-->
+    <!--{{msg.id}} {{msg.from}}-->
+    <!--<span class="text">{{msg.content}}</span>-->
+    <!--</li>-->
     <!--</ul>-->
 </section>
 <script src="node_modules/angularjs-1.2.16.js" type="text/javascript"></script>
+<script src="components/messagePassingCommons.js" type="text/javascript"></script>
+<script src="components/frontEndMessaging.js" type="text/javascript"></script>
 <script src="components/interactionLogic.js" type="text/javascript"></script>
 </body>
 </html>
