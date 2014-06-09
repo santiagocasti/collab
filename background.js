@@ -4,33 +4,33 @@ chrome.app.runtime.onLaunched.addListener(function (launchData) {
     });
 });
 
-
-//var browserify = require('browserify');
-//var b = browserify();
-//b.add('./networking.js');
-//b.bundle().pipe(process.stdout);
-
-
-//var net = require('networking.js');
-
-//net.createSocket("TCP", 1234);
-
-//require('networking.js');
-
-//network.createSocket('tcp', 1234);
-
 var n = Network.getInstance();
 
-console.log(n);
-
 var promise = new Promise(function (resolve, reject) {
-    console.log("calling: n.getNetworkInterfaces(resolve)");
     n.loadNetworkInterfaces(resolve);
 });
 
-promise.then(function(){
-    console.log("calling: n.createSocket("+n.UDP_TYPE+", 1234)");
-    n.createSocket(n.UDP_TYPE, 1234);
+promise.then(function () {
+
+    /**
+     * This callback is used when new data arrives from the replication socket.
+     * @param data
+     */
+    var replicationDataReceived = (function (data) {
+        ReplicationController.HandleMessage(data);
+    });
+
+    log("Starting the socket creation part....");
+    return n.createSocket(n.UDP_TYPE, 1234, replicationDataReceived);
 });
+
+
+// Add a listener to the internal message passing mechanism of the app
+function callback_oAk9bgKDjyjd(message, sender, sendResponse){
+    BackEndMessaging.handleMessage(message, sender, sendResponse);
+}
+chrome.runtime.onMessage.addListener(callback_oAk9bgKDjyjd);
+
+
 
 
