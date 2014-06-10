@@ -8,12 +8,14 @@
     "app": {
         "background": {
             "scripts": [
+                "components/hashing.js",
                 "components/loggingUtils.js",
                 "components/networking.js",
                 "components/messagePassingCommons.js",
                 "components/backEndMessaging.js",
                 "components/replicationController.js",
                 "components/applicationController.js",
+                "components/crdt.js",
                 "components/context.js",
                 "background.js"
             ]
