@@ -22,7 +22,7 @@ function createMsgHead(depth, debug) {
 
 function log(message, object, debug, depth) {
 
-    if (!depth){
+    if (!depth) {
         depth = 3;
     }
 
@@ -35,8 +35,8 @@ function log(message, object, debug, depth) {
     }
 }
 
-function debug(message, object){
-    if (!DEBUG_MODE_ON){
+function debug(message, object) {
+    if (!DEBUG_MODE_ON) {
         return;
     }
 

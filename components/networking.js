@@ -261,7 +261,7 @@ var Network = (function () {
                 sendUDPMessage(msg.ip, msg.port, msg);
             });
 
-            pendingMulticastMessages.forEach(function(msg){
+            pendingMulticastMessages.forEach(function (msg) {
                 sendMulticastMessage(msg.ip, msg.port, msg, msg.callback);
             })
         }
@@ -425,9 +425,9 @@ var Network = (function () {
             var arrayBuffer = messageObj.getPreparedContent();
 
             var cb;
-            if (messageObj.callback){
+            if (messageObj.callback) {
                 cb = messageObj.callback;
-            }else{
+            } else {
                 cb = callback;
             }
 
@@ -538,13 +538,34 @@ var Network = (function () {
                 chrome.system.network.getNetworkInterfaces(function (ni) {
                     debug("We got the network interfaces.");
 
+                    var identityString = "";
+
                     ni.forEach(function (el) {
                         var regEx = new RegExp('^[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*$');
                         if (regEx.test(el.address) == true) {
                             networkInterfaces[networkInterfaces.length] = new NetworkInterface(el.address, el.prefixLength, el.name);
-                            debug(networkInterfaces[networkInterfaces.length - 1]);
+                            identityString += "|"+el.address;
                         }
                     });
+
+                    log("IdentityString: " + identityString);
+
+                    function hash(a) {
+                        var hash = 0;
+                        if (this.length == 0) return hash;
+                        for (i = 0; i < this.length; i++) {
+                            char = this.charCodeAt(i);
+                            hash = ((hash << 5) - hash) + char;
+                            hash = hash & hash; // Convert to 32bit integer
+                        }
+                        return hash;
+                    }
+
+                    log("After hashing: "+identityString.hashCode());
+
+                    var c = Context.getInstance();
+                    c.setReplicaIdentity(identityString);
+
 
                     resolve();
                 });
