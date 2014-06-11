@@ -9,6 +9,8 @@ app.controller('InteractionCtrl', function ($scope) {
 
     $scope.rows = [];
     $scope.messageContent = 'content';
+    $scope.onlineUserCount = 0;
+    $scope.onlineUserCountString = "";
 
     $scope.addRow = function () {
 //        $scope.rows[$scope.rows.length] = {
@@ -69,8 +71,17 @@ app.controller('InteractionCtrl', function ($scope) {
         $scope.$apply();
     }
 
+    $scope.updateOnlineUserCount = function(message){
+        console.log("We received a new online user count");
+        console.log(message);
+        $scope.onlineUserCount = message.content;
+        $scope.onlineUserCountString = $scope.onlineUserCount + " online users";
+        $scope.$apply();
+    }
+
     var fem = FrontEndMessaging.getInstance();
     fem.addCallbackForEvent(FrontEndMessaging.EventType.NEW_DATA, $scope.handleMessage);
+    fem.addCallbackForEvent(FrontEndMessaging.EventType.UPDATED_USER_COUNT, $scope.updateOnlineUserCount);
 });
 
 function callback_fy6fhP17Zt2g(message, sender, sendResponse) {
