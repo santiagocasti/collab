@@ -1,10 +1,12 @@
 /**
  * ReplicationP - Replication Protocol constants
  */
-var ReplicationP = (function () {
+var ReplicationProtocol = (function () {
 
     const REPLICATION_OUT = 1;
     const REPLICATION_IN = 2;
+
+    const COUNTER_PAYLOAD = 101;
 
     const PORT = 1234;
     const MULTICAST_IP = "237.132.123.123";
@@ -17,8 +19,69 @@ var ReplicationP = (function () {
 
         Port: PORT,
 
-        MulticastIP: MULTICAST_IP
+        MulticastIP: MULTICAST_IP,
+
+        PayloadTypes: {
+            COUNTER: COUNTER_PAYLOAD
+        }
     }
+})();
+
+var ReplicationPayload = (function (){
+
+    function init(t, oId, c){
+        var type = t;
+        var objectId = oId;
+        var content = c;
+
+        return {
+            getType: function (){
+                return type;
+            },
+
+            getObjectId: function(){
+                return objectId;
+            },
+
+            getContent: function(){
+                return content;
+            },
+
+            toJSON: function(){
+                var obj = {};
+                obj.type = type;
+                obj.objectId = objectId;
+                obj.content = content;
+                return JSON.stringify(obj);
+            }
+        }
+    }
+
+    function reconstructFromObject(obj){
+
+        var type, objectId, content;
+        if (obj.type){
+            type = obj.type;
+        }
+        if (obj.objectId){
+            objectId = obj.objectId;
+        }
+        if (obj.content){
+            content = obj.content;
+        }
+
+        return init(type, objectId, content);
+    }
+
+    return {
+        new: function(type, objectId, content){
+            return init(type, objectId, content);
+        },
+        reconstruct: function (jsonString){
+            return reconstructFromObject(jsonString);
+        }
+    }
+
 })();
 
 /**
@@ -26,28 +89,34 @@ var ReplicationP = (function () {
  */
 var Message = (function () {
 
-    function init(t, c) {
+    function init(t, p) {
 
         var type = t;
-        var content = c;
+        var payload;
+
+        if (p.type == ReplicationProtocol.PayloadTypes.COUNTER){
+            payload = ReplicationPayload.reconstruct(p);
+        }else{
+            payload = p;
+        }
 
         return {
             getPreparedContent: function () {
-                var strContent = JSON.stringify(content);
-                return MessageEncoder.str2ab(strContent);
+                var strPayload = payload.toJSON();
+                return MessageEncoder.str2ab(strPayload);
             },
 
             getType: function () {
                 return type;
             },
 
-            getContent: function () {
-                return content;
+            getPayload: function () {
+                return payload;
             },
 
             log: function () {
                 console.log("type: " + type);
-                console.log("content: " + content);
+                console.log("payload: " + payload);
             }
         }
     }
@@ -55,12 +124,12 @@ var Message = (function () {
     return{
 
         CreateFromRawData: function (type, rawMessage) {
-            var content = MessageEncoder.ab2str(rawMessage);
-            return init(type, JSON.parse(content));
+            var payload = MessageEncoder.ab2str(rawMessage);
+            return init(type, JSON.parse(payload));
         },
 
-        Create: function (type, content) {
-            return init(type, content);
+        Create: function (type, payload) {
+            return init(type, payload);
         }
 
     }
@@ -122,7 +191,7 @@ function NetworkInterface(ip, netmask, name) {
     };
 
     this.getMulticastAddress = function () {
-        return ReplicationP.MulticastIP;
+        return ReplicationProtocol.MulticastIP;
     }
 }
 
@@ -249,10 +318,13 @@ var Network = (function () {
                 return;
             }
 
-//            debug("We have the following messages");
-//            pendingMessages.forEach(function (msg) {
-//                log("", msg);
-//            });
+            pendingMessages.forEach(function (msg) {
+                log("Regular message", msg);
+            });
+
+            pendingMulticastMessages.forEach(function (msg) {
+                log("Multicast message", msg);
+            });
 
             UDP_CREATED = value;
             UDP_MULTICAST_CREATED = value;
@@ -346,7 +418,7 @@ var Network = (function () {
                             multicastSocket = socket;
 
                             // Join the multicast group where replication occurs
-                            chrome.sockets.udp.joinGroup(socketId, ReplicationP.MulticastIP, function (result) {
+                            chrome.sockets.udp.joinGroup(socketId, ReplicationProtocol.MulticastIP, function (result) {
 
                                 if (result < 0) {
                                     handleSocketCreationError(result, 5);
@@ -357,7 +429,7 @@ var Network = (function () {
 
                                 // Debugging: list the multicast groups joined
                                 chrome.sockets.udp.getJoinedGroups(socketId, function (val) {
-                                    console.log("[" + socketId + "] joined groups for ip " + ReplicationP.MulticastIP + " [sockeId:" + socketId + "]");
+                                    console.log("[" + socketId + "] joined groups for ip " + ReplicationProtocol.MulticastIP + " [sockeId:" + socketId + "]");
                                     console.log(val);
                                 });
 
@@ -483,9 +555,10 @@ var Network = (function () {
 
                 if (UDP_MULTICAST_CREATED == false) {
                     debug("Trying to send multicast message, but no UDP socket created. Queueing the message.");
-                    messageObj.ip = ip;
+                    messageObj.ip = multicastIp;
                     messageObj.port = port;
                     messageObj.callback = callback;
+                    debug("Pushed this message to pending messages:", JSON.stringify(messageObj));
                     pendingMulticastMessages.push(messageObj);
                     return false;
                 }
