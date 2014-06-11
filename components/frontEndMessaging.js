@@ -2,14 +2,17 @@ var FrontEndMessaging = (function () {
 
     var instance;
     var NEW_DATA_EVENT = 1;
+    var UPDATED_USER_COUNT = 2;
 
     function init() {
 
         var callbacks = [];
         callbacks[NEW_DATA_EVENT] = [];
+        callbacks[UPDATED_USER_COUNT] = [];
 
         function isValidEvent(event) {
-            if (event != NEW_DATA_EVENT) {
+            if (event != NEW_DATA_EVENT &&
+                event != UPDATED_USER_COUNT) {
                 return false;
             }
 
@@ -34,6 +37,12 @@ var FrontEndMessaging = (function () {
                 case MessagePassing.MessageTypes.REPLICATION_NOTIFICATION:
                     debug("Received a new replication notification message.");
                     callbacks[NEW_DATA_EVENT].forEach(function (callback) {
+                        callback(message);
+                    });
+                    break;
+                case MessagePassing.MessageTypes.USER_COUNT_UPDATED:
+                    debug("Received a message updating the user count");
+                    callbacks[UPDATED_USER_COUNT].forEach(function (callback) {
                         callback(message);
                     });
                     break;
@@ -82,7 +91,8 @@ var FrontEndMessaging = (function () {
     return {
 
         EventType: {
-            NEW_DATA: NEW_DATA_EVENT
+            NEW_DATA: NEW_DATA_EVENT,
+            UPDATED_USER_COUNT: UPDATED_USER_COUNT
         },
 
         getInstance: function () {
