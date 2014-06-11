@@ -78,5 +78,7 @@ function callback_fy6fhP17Zt2g(message, sender, sendResponse) {
     fem.handleMessage(message, sender, sendResponse);
 }
 
-chrome.runtime.onMessage.addListener(callback_fy6fhP17Zt2g);
+if (chrome.runtime.onMessage){
+    chrome.runtime.onMessage.addListener(callback_fy6fhP17Zt2g);
+}
 
