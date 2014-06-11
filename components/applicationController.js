@@ -21,7 +21,7 @@ var ApplicationController = (function () {
             }
 
             // replicate the new created data
-            var msg = Message.Create(ReplicationP.MessageTypes.OUT, message);
+            var msg = Message.Create(ReplicationProtocol.MessageTypes.OUT, message);
             debug("Message created for replication: ", msg);
 
             ReplicationController.Replicate(msg, callback_123987ioslk);
@@ -38,7 +38,7 @@ var ApplicationController = (function () {
         function processReceivedData(repMsg, rawMsg) {
 
             // create the content
-            var content = repMsg.getContent();
+            var content = repMsg.getPayload();
             content.remoteAddress = rawMsg.remoteAddress;
             content.remotePort = rawMsg.remotePort;
             debug("Final payload to be sent:", content);
@@ -54,6 +54,11 @@ var ApplicationController = (function () {
             // TODO: add permanent storage
         }
 
+        function updateCounter(count){
+            var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.USER_COUNT_UPDATED, count);
+            debug("Message for frontend: ", msg);
+            BackEndMessaging.sendMessage(msg);
+        }
 
         return {
 
@@ -63,6 +68,10 @@ var ApplicationController = (function () {
 
             newDataReceived: function (msg, rawMsg) {
                 processReceivedData(msg, rawMsg);
+            },
+
+            updateOnlineUserCount: function (count){
+                updateCounter(count);
             }
 
         };
