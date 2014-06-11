@@ -1,8 +1,9 @@
 var CRDT = (function () {
 
 
-    function newCounter(initialCounterValues) {
+    function newCounter(id, initialCounterValues) {
 
+        var id = id;
         var count = initialCounterValues;
 
         return {
@@ -155,7 +156,7 @@ var CRDT = (function () {
                     }
                 });
 
-                return CRDT.newCounter(finalCount);
+                return CRDT.newCounter(1, finalCount);
             },
 
             /**
@@ -164,6 +165,14 @@ var CRDT = (function () {
              */
             toJSON: function () {
                 return JSON.stringify(count);
+            },
+
+            /**
+             * Returns the ID of the current counter
+             * @returns {*}
+             */
+            getId: function(){
+                return id;
             }
         }
     }
@@ -172,11 +181,12 @@ var CRDT = (function () {
 
         /**
          * Create a new counter with the initialCounterValues
+         * @param id
          * @param initialCounterValues
          * @returns {*}
          */
-        newCounter: function (initialCounterValues) {
-            return newCounter(initialCounterValues);
+        newCounter: function (id, initialCounterValues) {
+            return newCounter(id, initialCounterValues);
         }
 
     }

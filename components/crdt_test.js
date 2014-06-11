@@ -4,7 +4,7 @@ describe("CRDTs counters ", function () {
     it("can be initialized with an empty value", function () {
 
         // create an empty counter
-        var c = CRDT.newCounter({});
+        var c = CRDT.newCounter(1, {});
         var repId = "asd";
 
         // check that the count is 0
@@ -22,7 +22,7 @@ describe("CRDTs counters ", function () {
         expect(jsonString).toEqual('{"asd":1}');
 
         // create a new counter from the JSON produced by the first counter
-        var c2 = CRDT.newCounter(JSON.parse(jsonString));
+        var c2 = CRDT.newCounter(1, JSON.parse(jsonString));
 
         // check that the count still matches
         expect(c2.getCount()).toEqual(c.getCount());
@@ -32,7 +32,7 @@ describe("CRDTs counters ", function () {
 
     it("support increments from different replicas", function () {
 
-        var c = CRDT.newCounter({});
+        var c = CRDT.newCounter(1, {});
 
         // replica IDs can be any string
         var repIdA = "asd";
@@ -72,8 +72,8 @@ describe("CRDTs counters ", function () {
     });
 
     it("support merge of different counters", function () {
-        var c1 = CRDT.newCounter({});
-        var c2 = CRDT.newCounter({});
+        var c1 = CRDT.newCounter(1, {});
+        var c2 = CRDT.newCounter(1, {});
 
 
         function assertMergeBothWays(c1, c2, n){
@@ -119,7 +119,7 @@ describe("CRDTs counters ", function () {
 
     it("allow access to the replica counts", function(){
 
-        var c = CRDT.newCounter({});
+        var c = CRDT.newCounter(1, {});
         var repId = "asd";
 
         // no value for replica ID given
