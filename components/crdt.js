@@ -1,7 +1,7 @@
-var CRDT = (function (){
+var CRDT = (function () {
 
 
-    function newCounter(initialCounterValues){
+    function newCounter(initialCounterValues) {
 
         var count = initialCounterValues;
 
@@ -11,8 +11,8 @@ var CRDT = (function (){
              * Increment the counter for the corresponding replica
              * @param replicaId
              */
-            increment: function(replicaId){
-                if (!count[replicaId]){
+            increment: function (replicaId) {
+                if (!count[replicaId]) {
                     count[replicaId] = 0;
                 }
 
@@ -23,10 +23,10 @@ var CRDT = (function (){
              * Returns the total count
              * @returns {number} total count
              */
-            getCount: function(){
+            getCount: function () {
                 var total = 0;
 
-                for (var key in count){
+                for (var key in count) {
                     total += count[key];
                 }
 
@@ -34,18 +34,56 @@ var CRDT = (function (){
             },
 
             /**
+             * Returns the count tracked for a given replica ID. False if not tracking it.
+             * @param repId
+             * @returns {*}
+             */
+            getCountByReplicaId: function (repId) {
+                if (count[repId]){
+                    return count[repId];
+                }
+
+                return false;
+            },
+
+            /**
+             * Checks if the current counter keeps track of the count of the given replica ID
+             * @param repId
+             * @returns {boolean}
+             */
+            tracks: function (repId){
+                if (count[repId]){
+                    return true;
+                }
+
+                return false;
+            },
+
+            /**
+             * Returns an array of the replica IDs that it is currently tracking
+             * @returns {Array}
+             */
+            getReplicaIds: function(){
+                var repIds = [];
+                for (var key in count){
+                    repIds.push(key);
+                }
+                return repIds;
+            },
+
+            /**
              * Is the current counter bigger than the one given?
              * @param otherCounter
              * @returns {boolean}
              */
-            isBigger: function(otherCounter){
+            isBigger: function (otherCounter) {
 
                 /**
                  * How to handle cases of undefined?
                  */
 
-                for (var key in count){
-                    if (otherCounter.count[key] > count[key]){
+                for (var key in count) {
+                    if (otherCounter.getCountByReplicaId(key) > count[key]) {
                         return false;
                     }
                 }
@@ -58,14 +96,14 @@ var CRDT = (function (){
              * @param otherCounter
              * @returns {boolean}
              */
-            isEqual: function(otherCounter){
+            isEqual: function (otherCounter) {
 
                 /**
                  * How to handle cases of undefined?
                  */
 
-                for (var key in count){
-                    if (otherCounter.count[key] !== count[key]){
+                for (var key in count) {
+                    if (otherCounter.getCountByReplicaId(key) !== count[key]) {
                         return false;
                     }
                 }
@@ -78,43 +116,44 @@ var CRDT = (function (){
              * @param otherCounter
              * @returns {*}
              */
-            merge: function(otherCounter){
+            merge: function (otherCounter) {
 
                 var finalCount = {};
                 var keysFound = 0;
 
-                for (var key in count){
+                for (var key in count) {
 
                     // if the other counter has this key
-                    if (otherCounter.count[key]){
+                    if (otherCounter.tracks(key)) {
                         ++keysFound;
                         // compare them
-                        if (otherCounter.count[key] > count[key]){
+                        if (otherCounter.getCountByReplicaId(key) > count[key]) {
                             //set the other
-                            finalCount[key] = otherCounter.count[key];
-                        }else{
+                            finalCount[key] = otherCounter.getCountByReplicaId(key);
+                        } else {
                             //set the current
                             finalCount[key] = count[key];
                         }
-                    }else{
+                    } else {
                         // set the count of the current counter
                         finalCount[key] = count[key];
                     }
                 }
 
-                // if the two counters have the same replicas
-                if (keysFound === count.length &&
-                    keysFound === otherCounter.count.length){
-                    return CRDT.newCounter(finalCount);
-                }
+//                // if the two counters have the same replicas
+//                if (keysFound === count.length &&
+//                        keysFound === otherCounter.count.length) {
+//                    return CRDT.newCounter(finalCount);
+//                }
 
+                var replicaIds = otherCounter.getReplicaIds();
                 // loop through the keys of the other counter
-                for (var key in otherCounter.count){
-                    if (!finalCount[key]){
+                replicaIds.forEach(function(key) {
+                    if (!finalCount[key]) {
                         // if the key is not set in the final count, set it
-                        finalCount[key] = otherCounter.count[key];
+                        finalCount[key] = otherCounter.getCountByReplicaId(key);
                     }
-                }
+                });
 
                 return CRDT.newCounter(finalCount);
             },
@@ -123,7 +162,7 @@ var CRDT = (function (){
              * Return the current counter in JSON format
              * @returns {*}
              */
-            toJSON: function(){
+            toJSON: function () {
                 return JSON.stringify(count);
             }
         }
@@ -141,7 +180,6 @@ var CRDT = (function (){
         }
 
     }
-
 
 
 })();
