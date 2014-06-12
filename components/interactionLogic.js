@@ -93,3 +93,16 @@ if (chrome.runtime.onMessage){
     chrome.runtime.onMessage.addListener(callback_fy6fhP17Zt2g);
 }
 
+if (chrome.runtime.app){
+    var currentWindow = chrome.app.window.current();
+
+    if (currentWindow){
+        currentWindow.onClosed.addListener(function (){
+            var msg = MessagePassing.MessageToBack(MessagePassing.MessageTypes.CLOSING_WINDOW, "");
+
+            var fem = FrontEndMessaging.getInstance();
+            fem.sendMessage(msg);
+        });
+    }
+}
+
