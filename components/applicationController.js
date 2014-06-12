@@ -5,6 +5,8 @@ var ApplicationController = (function () {
 
     function init() {
 
+        var onlineUserCounter;
+
         /**
          * Process data created in the current instance of the application
          * @param message
@@ -54,8 +56,15 @@ var ApplicationController = (function () {
             // TODO: add permanent storage
         }
 
-        function updateCounter(count){
+        function updateCounter(count) {
             var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.USER_COUNT_UPDATED, count);
+            debug("Message for frontend: ", msg);
+            BackEndMessaging.sendMessage(msg);
+        }
+
+        function setCounter(counter) {
+            onlineUserCounter = counter;
+            var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.USER_COUNT_UPDATED, counter.getCount());
             debug("Message for frontend: ", msg);
             BackEndMessaging.sendMessage(msg);
         }
@@ -70,8 +79,37 @@ var ApplicationController = (function () {
                 processReceivedData(msg, rawMsg);
             },
 
-            updateOnlineUserCount: function (count){
-                updateCounter(count);
+            setOnlineUsersCounter: function (counter) {
+                setCounter(counter);
+            },
+
+            getOnlineUsersCounter: function () {
+                return onlineUserCounter;
+            },
+
+            appStarted: function () {
+                debug("App started code");
+
+                // create a counter and increment it
+                var counter = CRDT.newCounter(1, {});
+                counter.increment(c.getHashedReplicaId());
+
+                // set the counter to the app controller
+                setCounter(counter);
+
+                // replicate the counter
+                ReplicationController.ReplicateCounter(onlineUserCounter);
+            },
+
+            appClosed: function () {
+                debug("App closing");
+
+                // decrement the counter of online users
+                var c = Context.getInstance();
+                onlineUserCounter.decrement(c.getHashedReplicaId());
+
+                // replicate it
+                ReplicationController.ReplicateCounter(onlineUserCounter);
             }
 
         };

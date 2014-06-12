@@ -5,23 +5,16 @@ var Context = (function () {
     function init() {
 
         var replicaIdentity;
-        var onlineUsersCounter;
+        var timestamp;
 
         return {
             setReplicaIdentity: function (id) {
                 replicaIdentity = id;
+                timestamp = new Date().getTime();
             },
 
             getHashedReplicaId: function () {
-                return replicaIdentity.hashCode();
-            },
-
-            setOnlineUsersCounter: function (counter) {
-                onlineUsersCounter = counter;
-            },
-
-            getOnlineUsersCounter: function () {
-                return onlineUsersCounter;
+                return replicaIdentity.hashCode() + "." + timestamp.toString();
             }
         }
 
