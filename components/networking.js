@@ -623,10 +623,12 @@ var Network = (function () {
 
                     log("IdentityString: " + identityString);
 
+                    var identity = ReplicaIdentity.new(identityString.hashCode(), new Date().getTime());
                     var c = Context.getInstance();
-                    c.setReplicaIdentity(identityString);
 
-                    log("After hashing: "+ c.getHashedReplicaId());
+                    c.setReplicaIdentity(identity);
+
+                    log("After hashing: "+ identity.toString());
 
                     resolve();
                 });

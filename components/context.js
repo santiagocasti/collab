@@ -5,20 +5,16 @@ var Context = (function () {
     function init() {
 
         var replicaIdentity;
-        var timestamp;
 
         return {
-            setReplicaIdentity: function (id) {
-                replicaIdentity = id;
-                timestamp = new Date().getTime();
+            setReplicaIdentity: function (identity) {
+                replicaIdentity = identity;
             },
 
-            getHashedReplicaId: function () {
-                return replicaIdentity.hashCode() + "." + timestamp.toString();
+            getReplicaIdentity: function () {
+                return replicaIdentity;
             }
         }
-
-
     }
 
     return {
