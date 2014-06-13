@@ -23,10 +23,7 @@ promise.then(function () {
     debug("Starting the socket creation part....");
     n.createMulticastSocket(n.UDP_TYPE, ReplicationProtocol.Port, replicationDataReceived);
 
-}).then(function () {
-            var appController = ApplicationController.getInstance();
-            appController.appStarted();
-        });
+});
 
 // Add a listener to the internal message passing mechanism of the app
 function callback_oAk9bgKDjyjd(message, sender, sendResponse) {
