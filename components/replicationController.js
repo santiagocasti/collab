@@ -50,14 +50,16 @@ var ReplicationController = (function () {
             switch (payload.getType()) {
                 case ReplicationProtocol.PayloadTypes.COUNTER:
 
+                        log("Received counter replication: ", payload);
+
                         var appController = ApplicationController.getInstance();
                         var existingCounter = appController.getOnlineUsersCounter();
 
                         var newCounter = CRDT.newCounterFromJSON(payload.getObjectId(), JSON.parse(payload.getContent()));
 
-                    	var mergedCounter = newCounter.merge(existingCounter);
+                    	newCounter.merge(existingCounter);
 
-                        appController.setOnlineUsersCounter(mergedCounter);
+                        appController.setOnlineUsersCounter(newCounter);
 
                     break;
                 default:

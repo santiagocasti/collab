@@ -65,14 +65,86 @@ var CRDT = (function () {
             return finalCount;
         }
 
+        function getReplicaIds(){
+            var repIds = [];
+            for (var key in incrementCount) {
+                repIds.push(key);
+            }
+            return repIds;
+        }
+
+        /**
+         * This function is in charge of cleaning the counter arrays.
+         * It will look for replica Ids that correspond to the same
+         * replica but where produced in different timestamps.
+         * It will only conserve the counts of the last timestamp and
+         * delete the ones on the previous timestamps.
+         */
+        function purgeCounterValues(){
+
+            var repIds = getReplicaIds();
+            var idMap = {};
+            var repIdObj;
+
+            // build a map of replica ids pointing at a bag of timestamps
+            repIds.forEach(function(val){
+                repIdObj = ReplicaIdentity.newFromString(val);
+                if (!idMap[repIdObj.getId()]){
+                    idMap[repIdObj.getId()] = [];
+                }
+
+                idMap[repIdObj.getId()].push(repIdObj.getTimestamp());
+            });
+
+            var newRepId;
+            var finalIds = [];
+
+            for (var id in idMap){
+
+                // if for a given id we have more than one timestamp
+                if (idMap[id].length > 1){
+                    // use the most recent and discard the others
+                    idMap[id].sort();
+                    idMap[id].reverse();
+                }
+
+                newRepId = ReplicaIdentity.new(id, idMap[id][0]);
+                finalIds.push(newRepId.toString());
+            }
+
+            var newIncrement = {}, newDecrement = {};
+            // copy the final Ids values only to the new counter arrays
+            finalIds.forEach(function (val){
+                newIncrement[val] = incrementCount[val];
+                newDecrement[val] = decrementCount[val];
+            });
+
+            incrementCount = newIncrement;
+            decrementCount = newDecrement;
+
+        }
+
+        function encodeToJSON(){
+            var bag = {};
+            bag['increment'] = incrementCount;
+            bag['decrement'] = decrementCount;
+            return JSON.stringify(bag);
+        }
+
 
         return {
 
             /**
              * Increment the counter for the corresponding replica
              * @param replicaId
+             * @return boolean
              */
             increment: function (replicaId) {
+
+                if (!ReplicaIdentity.IsValidStringIdentity(replicaId)){
+                    return false
+                }
+
                 if (!incrementCount[replicaId]) {
                     incrementCount[replicaId] = 0;
                 }
@@ -87,17 +159,25 @@ var CRDT = (function () {
             /**
              * Decrement the counter for the corresponding replica
              * @param replicaId
+             * @return boolean
              */
             decrement: function (replicaId) {
-                if (!decrementCount[replicaId]) {
+
+                if (!ReplicaIdentity.IsValidStringIdentity(replicaId)){
+                    return false
+                }
+
+                if (typeof decrementCount[replicaId] === 'undefined') {
                     decrementCount[replicaId] = 0;
                 }
 
-                if (!incrementCount[replicaId]) {
+                if (typeof incrementCount[replicaId] === 'undefined') {
                     incrementCount[replicaId] = 0;
                 }
 
                 decrementCount[replicaId] = decrementCount[replicaId] + 1;
+
+                return true;
             },
 
             /**
@@ -156,11 +236,7 @@ var CRDT = (function () {
              * @returns {boolean}
              */
             tracks: function (repId) {
-                if (incrementCount[repId]) {
-                    return true;
-                }
-
-                return false;
+                return typeof incrementCount[repId] !== 'undefined';
             },
 
             /**
@@ -168,11 +244,7 @@ var CRDT = (function () {
              * @returns {Array}
              */
             getReplicaIds: function () {
-                var repIds = [];
-                for (var key in incrementCount) {
-                    repIds.push(key);
-                }
-                return repIds;
+                return getReplicaIds();
             },
 
             /**
@@ -223,7 +295,13 @@ var CRDT = (function () {
             merge: function (otherCounter) {
 
                 if (!otherCounter) {
+                    log("Just passing one counter!");
                     return this;
+                }
+
+                if (id != otherCounter.getId()){
+                    log("counterIds don't match!");
+                    return false;
                 }
 
                 var incrementMergeCounter = getMergedCounters(otherCounter, true);
@@ -243,7 +321,10 @@ var CRDT = (function () {
                     }
                 }
 
-                return CRDT.newCounter(1, incrementMergeCounter, decrementMergeCounter);
+                incrementCount = incrementMergeCounter;
+                decrementCount = decrementMergeCounter;
+
+                purgeCounterValues();
             },
 
             /**
@@ -251,10 +332,7 @@ var CRDT = (function () {
              * @returns {*}
              */
             toJSON: function () {
-                var bag = {};
-                bag['increment'] = incrementCount;
-                bag['decrement'] = decrementCount;
-                return JSON.stringify(bag);
+                return encodeToJSON();
             },
 
             /**
@@ -276,8 +354,27 @@ var CRDT = (function () {
          * @returns {*}
          */
         newCounter: function (id, initialIncrement, initialDecrement) {
-            if (!initialIncrement) initialIncrement = {};
-            if (!initialDecrement) initialDecrement = {};
+
+            if (!initialIncrement){
+                initialIncrement = {};
+            }else{
+                for (var key in initialIncrement){
+                    if (!ReplicaIdentity.IsValidStringIdentity(key)){
+                        return false;
+                    }
+                }
+            }
+
+            if (!initialDecrement){
+                initialDecrement = {};
+            }else{
+                for (var key in initialDecrement){
+                    if (!ReplicaIdentity.IsValidStringIdentity(key)){
+                        return false;
+                    }
+                }
+            }
+
             return newCounter(id, initialIncrement, initialDecrement);
         },
 
