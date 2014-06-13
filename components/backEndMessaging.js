@@ -36,6 +36,10 @@ var BackEndMessaging = (function () {
                     appController.newDataCreated(message.content);
 
                     break;
+                case MessagePassing.MessageTypes.OPENED_WINDOW:
+                    var appController = ApplicationController.getInstance();
+                    appController.appStarted();
+                    break;
                 case MessagePassing.MessageTypes.CLOSING_WINDOW:
                     debug("Received a message of type CLOSING_WINDOW", message);
 

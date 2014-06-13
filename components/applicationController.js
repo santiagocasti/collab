@@ -90,9 +90,12 @@ var ApplicationController = (function () {
             appStarted: function () {
                 debug("App started code");
 
+                var c = Context.getInstance();
+                var ri = c.getReplicaIdentity();
+
                 // create a counter and increment it
                 var counter = CRDT.newCounter(1, {});
-                counter.increment(c.getHashedReplicaId());
+                counter.increment(ri.toString());
 
                 // set the counter to the app controller
                 setCounter(counter);
@@ -106,7 +109,9 @@ var ApplicationController = (function () {
 
                 // decrement the counter of online users
                 var c = Context.getInstance();
-                onlineUserCounter.decrement(c.getHashedReplicaId());
+                var ri = c.getReplicaIdentity();
+
+                onlineUserCounter.decrement(ri.toString());
 
                 // replicate it
                 ReplicationController.ReplicateCounter(onlineUserCounter);

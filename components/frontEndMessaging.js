@@ -55,14 +55,11 @@ var FrontEndMessaging = (function () {
 
             handleMessage: function (rawMessage, sender, sendResponse) {
 
-                debug("FrontEndMessaging handleMessage");
-
                 var message = MessagePassing.ParseMessage(rawMessage);
 
                 /** @var message MessagePassing */
                 switch (message.to) {
                     case MessagePassing.Destinations.FRONT:
-                        debug("[FrontEndMessaging] Received a message for FRONT: ", message);
                         processMessage(message, sender);
                         break;
                     default:

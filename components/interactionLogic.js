@@ -93,16 +93,20 @@ if (chrome.runtime.onMessage){
     chrome.runtime.onMessage.addListener(callback_fy6fhP17Zt2g);
 }
 
-if (chrome.runtime.app){
+if (chrome.app){
     var currentWindow = chrome.app.window.current();
 
     if (currentWindow){
         currentWindow.onClosed.addListener(function (){
             var msg = MessagePassing.MessageToBack(MessagePassing.MessageTypes.CLOSING_WINDOW, "");
-
             var fem = FrontEndMessaging.getInstance();
             fem.sendMessage(msg);
         });
+
+        // notify the backend that the front end loaded
+        var msg = MessagePassing.MessageToBack(MessagePassing.MessageTypes.OPENED_WINDOW, "");
+        var fem = FrontEndMessaging.getInstance();
+        fem.sendMessage(msg);
     }
 }
 
