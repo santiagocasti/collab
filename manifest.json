@@ -9,6 +9,7 @@
         "background": {
             "scripts": [
                 "components/hashing.js",
+                "components/replicaIdentity.js",
                 "components/loggingUtils.js",
                 "components/networking.js",
                 "components/messagePassingCommons.js",
