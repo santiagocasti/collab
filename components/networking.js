@@ -7,6 +7,7 @@ var ReplicationProtocol = (function () {
     const REPLICATION_IN = 2;
 
     const COUNTER_PAYLOAD = 101;
+    const IDENTITY_PAYLOAD = 102;
 
     const PORT = 1234;
     const MULTICAST_IP = "237.132.123.123";
@@ -22,7 +23,18 @@ var ReplicationProtocol = (function () {
         MulticastIP: MULTICAST_IP,
 
         PayloadTypes: {
-            COUNTER: COUNTER_PAYLOAD
+            COUNTER: COUNTER_PAYLOAD,
+            IDENTITY: IDENTITY_PAYLOAD
+        },
+
+        IsValidPayloadType: function(pt){
+            switch (pt){
+                case COUNTER_PAYLOAD:
+                case IDENTITY_PAYLOAD:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 })();
@@ -94,10 +106,12 @@ var Message = (function () {
         var type = t;
         var payload;
 
-        if (p.type == ReplicationProtocol.PayloadTypes.COUNTER){
+        if (ReplicationProtocol.IsValidPayloadType(p.type)){
             payload = ReplicationPayload.reconstruct(p);
+            debug("Payload type is valid!", payload);
         }else{
             payload = p;
+            debug("Payload type is NOT valid!", payload);
         }
 
         return {
@@ -115,8 +129,8 @@ var Message = (function () {
             },
 
             log: function () {
-                console.log("type: " + type);
-                console.log("payload: " + payload);
+                log("type: " + type);
+                log("payload: "+payload.toJSON(), payload);
             }
         }
     }

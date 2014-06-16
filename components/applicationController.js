@@ -102,6 +102,8 @@ var ApplicationController = (function () {
 
                 // replicate the counter
                 ReplicationController.ReplicateCounter(onlineUserCounter);
+
+                ReplicationController.SharePeerIdentity();
             },
 
             appClosed: function () {
