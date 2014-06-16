@@ -25,6 +25,13 @@ app.controller('InteractionCtrl', function ($scope) {
         $scope.sendMessage();
     }
 
+    $scope.printPeersList = function () {
+        var msg = MessagePassing.MessageToBack(MessagePassing.MessageTypes.PRINT_PEER_LIST, $scope.messageContent);
+        console.log("Requesting that peers list is printed.");
+        var fem = FrontEndMessaging.getInstance();
+        fem.sendMessage(msg);
+    }
+
     //    {'name': 'Nexus S',
 //         'snippet': 'Fast just got faster with Nexus S.'},
     $scope.fetchMessages = function () {
@@ -71,7 +78,7 @@ app.controller('InteractionCtrl', function ($scope) {
         $scope.$apply();
     }
 
-    $scope.updateOnlineUserCount = function(message){
+    $scope.updateOnlineUserCount = function (message) {
         console.log("We received a new online user count");
         console.log(message);
         $scope.onlineUserCount = message.content;
@@ -89,15 +96,15 @@ function callback_fy6fhP17Zt2g(message, sender, sendResponse) {
     fem.handleMessage(message, sender, sendResponse);
 }
 
-if (chrome.runtime.onMessage){
+if (chrome.runtime.onMessage) {
     chrome.runtime.onMessage.addListener(callback_fy6fhP17Zt2g);
 }
 
-if (chrome.app){
+if (chrome.app.window) {
     var currentWindow = chrome.app.window.current();
 
-    if (currentWindow){
-        currentWindow.onClosed.addListener(function (){
+    if (currentWindow) {
+        currentWindow.onClosed.addListener(function () {
             var msg = MessagePassing.MessageToBack(MessagePassing.MessageTypes.CLOSING_WINDOW, "");
             var fem = FrontEndMessaging.getInstance();
             fem.sendMessage(msg);

@@ -46,6 +46,11 @@ var BackEndMessaging = (function () {
                     var appController = ApplicationController.getInstance();
                     appController.appClosed();
                     break;
+                case MessagePassing.MessageTypes.PRINT_PEER_LIST:
+                    debug("Received a message to print the peer list");
+                    var c = Context.getInstance();
+                    c.printPeerList();
+                    break;
                 default:
                     debug("Received message that should not handle [" + message.type + "]: ", message);
             }
