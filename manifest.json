@@ -10,6 +10,7 @@
             "scripts": [
                 "components/hashing.js",
                 "components/replicaIdentity.js",
+                "components/peerIdentity.js",
                 "components/loggingUtils.js",
                 "components/networking.js",
                 "components/messagePassingCommons.js",
