@@ -1,10 +1,33 @@
+var DirectReplicationProtocol = (function () {
+    const PORT = 2345;
+
+    const DIRECT_REQUEST = 201;
+    const DIRECT_RESPONSE = 202;
+
+    return {
+        Port: PORT,
+        PayloadTypes: {
+            REQUEST: DIRECT_REQUEST,
+            RESPONSE: DIRECT_RESPONSE
+        },
+
+        IsValidPayloadType: function (pt) {
+            switch (parseInt(pt)) {
+                case DIRECT_REQUEST:
+                case DIRECT_RESPONSE:
+                    return true;
+                    break;
+                default:
+                    return false;
+            }
+        }
+    }
+})();
+
 /**
  * ReplicationP - Replication Protocol constants
  */
 var ReplicationProtocol = (function () {
-
-    const REPLICATION_OUT = 1;
-    const REPLICATION_IN = 2;
 
     const COUNTER_PAYLOAD = 101;
     const IDENTITY_PAYLOAD = 102;
@@ -13,11 +36,6 @@ var ReplicationProtocol = (function () {
     const MULTICAST_IP = "237.132.123.123";
 
     return{
-        MessageTypes: {
-            OUT: REPLICATION_OUT,
-            IN: REPLICATION_IN
-        },
-
         Port: PORT,
 
         MulticastIP: MULTICAST_IP,
@@ -27,11 +45,12 @@ var ReplicationProtocol = (function () {
             IDENTITY: IDENTITY_PAYLOAD
         },
 
-        IsValidPayloadType: function(pt){
-            switch (pt){
+        IsValidPayloadType: function (pt) {
+            switch (parseInt(pt)) {
                 case COUNTER_PAYLOAD:
                 case IDENTITY_PAYLOAD:
                     return true;
+                    break;
                 default:
                     return false;
             }
@@ -39,27 +58,27 @@ var ReplicationProtocol = (function () {
     }
 })();
 
-var ReplicationPayload = (function (){
+var MessagePayload = (function () {
 
-    function init(t, oId, c){
+    function init(t, oId, c) {
         var type = t;
         var objectId = oId;
         var content = c;
 
         return {
-            getType: function (){
+            getType: function () {
                 return type;
             },
 
-            getObjectId: function(){
+            getObjectId: function () {
                 return objectId;
             },
 
-            getContent: function(){
+            getContent: function () {
                 return content;
             },
 
-            toJSON: function(){
+            toJSON: function () {
                 var obj = {};
                 obj.type = type;
                 obj.objectId = objectId;
@@ -69,16 +88,16 @@ var ReplicationPayload = (function (){
         }
     }
 
-    function reconstructFromObject(obj){
+    function reconstructFromObject(obj) {
 
         var type, objectId, content;
-        if (obj.type){
+        if (obj.type) {
             type = obj.type;
         }
-        if (obj.objectId){
+        if (obj.objectId) {
             objectId = obj.objectId;
         }
-        if (obj.content){
+        if (obj.content) {
             content = obj.content;
         }
 
@@ -86,10 +105,10 @@ var ReplicationPayload = (function (){
     }
 
     return {
-        new: function(type, objectId, content){
+        new: function (type, objectId, content) {
             return init(type, objectId, content);
         },
-        reconstruct: function (jsonString){
+        reconstruct: function (jsonString) {
             return reconstructFromObject(jsonString);
         }
     }
@@ -101,18 +120,13 @@ var ReplicationPayload = (function (){
  */
 var Message = (function () {
 
+    const MESSAGE_IN = 501;
+    const MESSAGE_OUT = 502;
+
     function init(t, p) {
 
         var type = t;
-        var payload;
-
-        if (ReplicationProtocol.IsValidPayloadType(p.type)){
-            payload = ReplicationPayload.reconstruct(p);
-            debug("Payload type is valid!", payload);
-        }else{
-            payload = p;
-            debug("Payload type is NOT valid!", payload);
-        }
+        var payload = p;
 
         return {
             getPreparedContent: function () {
@@ -130,7 +144,7 @@ var Message = (function () {
 
             log: function () {
                 log("type: " + type);
-                log("payload: "+payload.toJSON(), payload);
+                log("payload: " + payload.toJSON(), payload);
             }
         }
     }
@@ -139,11 +153,16 @@ var Message = (function () {
 
         CreateFromRawData: function (type, rawMessage) {
             var payload = MessageEncoder.ab2str(rawMessage);
-            return init(type, JSON.parse(payload));
+            return init(type, MessagePayload.reconstruct(JSON.parse(payload)));
         },
 
         Create: function (type, payload) {
             return init(type, payload);
+        },
+
+        Types: {
+            IN: MESSAGE_IN,
+            OUT: MESSAGE_OUT
         }
 
     }
@@ -241,42 +260,25 @@ var Network = (function () {
     var TCP_TYPE = 1;
     var UDP_TYPE = 2;
 
-    var multicastSocket;
-
     function init() {
 
-        // Singleton
-
-        // Private methods and variables
-        function privateMethod() {
-            console.log("I am private");
-        }
-
-        var privateVariable = "Im also private";
-
+        var multicastSocket;
+        var tcpServerSockets = [];
+        var replicationRequestTCPSockets = [];
 
         // initialize sockets array
-        var sockets = [];
-        sockets[TCP_TYPE] = [];
-        sockets[UDP_TYPE] = [];
+//        var sockets = [];
+//        sockets[TCP_TYPE] = [];
+//        sockets[UDP_TYPE] = [];
 
         var pendingMessages = [];
         var pendingMulticastMessages = [];
 
-        var UDP_CREATED = false;
+//        var UDP_CREATED = false;
 
         var UDP_MULTICAST_CREATED = false;
 
         var networkInterfaces = [];
-
-        /**
-         * DEAD CODE
-         * @param resolve
-         * @param port
-         */
-        function createTCPSocket(resolve, port) {
-            log("Hitting DEAD CODE!");
-        }
 
         /**
          * DEAD CODE
@@ -321,35 +323,48 @@ var Network = (function () {
         }
 
         /**
+         *
+         * @param protocol
+         * @param port
+         * @returns {boolean}
+         */
+        function hasMulticastSocket(protocol, port) {
+
+            if (protocol !== UDP_TYPE &&
+                    port !== ReplicationProtocol.Port) {
+                log("Multicast socket not created");
+                return false;
+            } else if (typeof multicastSocket !== 'undefined') {
+                log("Multicast socket was created");
+                log("Typeof multicasSocket ", multicastSocket);
+                return true;
+            }
+        }
+
+
+        /**
          * Sets the flag that indicates that a UDP socket was created.
          * @param value
          */
-        function setUDPCreatedFlag(value) {
+        function setMulticastUDPCreatedFlag(value) {
             debug("Setting up flag for UDP socket creation");
             if (!value) {
-                UDP_CREATED = value;
                 UDP_MULTICAST_CREATED = value;
                 return;
             }
 
-            pendingMessages.forEach(function (msg) {
-                log("Regular message", msg);
-            });
-
             pendingMulticastMessages.forEach(function (msg) {
                 log("Multicast message", msg);
+                log(msg.toString());
             });
 
-            UDP_CREATED = value;
             UDP_MULTICAST_CREATED = value;
-
-            pendingMessages.forEach(function (msg) {
-                sendUDPMessage(msg.ip, msg.port, msg);
-            });
 
             pendingMulticastMessages.forEach(function (msg) {
                 sendMulticastMessage(msg.ip, msg.port, msg, msg.callback);
-            })
+            });
+
+            pendingMulticastMessages = [];
         }
 
         /**
@@ -378,6 +393,15 @@ var Network = (function () {
                 case 5:
                     msg = msg + "Multicast group could not be joined.";
                     break;
+                case 6:
+                    msg = msg + "No delay could not be set.";
+                    break;
+                case 7:
+                    msg = msg + "Could not set paused.";
+                    break;
+                case 8:
+                    msg = msg + "Could not connect socket.";
+                    break;
             }
 
             log(msg);
@@ -385,6 +409,93 @@ var Network = (function () {
             if (data) {
                 log("Extra data: " + JSON.stringify(data));
             }
+
+        }
+
+
+        function sendMessageThroughNewSocket(peerIp, peerPort, messageObj) {
+
+
+            chrome.sockets.tcp.create({}, function (socketInfo) {
+
+                var socketId = socketInfo.socketId;
+
+                replicationRequestTCPSockets.push(socketId);
+
+                if (socketId < 0) {
+                    handleSocketCreationError(socketId, 1, socketInfo);
+                    return;
+                }
+
+//                chrome.sockets.tcp.setNoDelay(socketId, false, function (result) {
+
+//                    if (result < 0) {
+//                        handleSocketCreationError(result, 6, socketInfo);
+//                        return;
+//                    }
+
+                    chrome.sockets.tcp.setPaused(socketId, false, function (result) {
+
+                        if (result < 0) {
+                            handleSocketCreationError(result, 7, socketInfo);
+                            return;
+                        }
+
+                        chrome.sockets.tcp.connect(socketId, peerIp, peerPort, function () {
+
+                            if (result < 0) {
+                                handleSocketCreationError(result, 8, socketInfo);
+                                return;
+                            }
+
+                            var arrayBuffer = messageObj.getPreparedContent();
+
+                            chrome.sockets.tcp.send(socketId, arrayBuffer, function (sendInfo) {
+                                debug("Message sent through TCP socket: " + messageObj.getPayload().toJSON(), messageObj);
+                            });
+
+                        });
+
+
+                    });
+//
+//
+//                });
+
+            });
+        }
+
+        /**
+         * @param port
+         * @param onReceive
+         */
+        function createTCPServerSocket(resolve, ip, port) {
+
+            log("Creating TCP Socket on [" + ip + ":" + port + "] ");
+
+            chrome.sockets.tcpServer.create({}, function (socketInfo) {
+
+                var socketId = socketInfo.socketId;
+
+                if (socketId < 0) {
+                    handleSocketCreationError(socketId, 1, socketInfo);
+                    return;
+                }
+
+                chrome.sockets.tcpServer.listen(socketId, ip, port, function (result) {
+
+                    if (result < 0) {
+                        handleSocketCreationError(result, 6, socketInfo);
+                        return;
+                    }
+
+                    debug("TCP Server socket listening on " + ip + ":" + port + "...");
+
+                    resolve();
+
+                });
+            });
+
 
         }
 
@@ -427,9 +538,9 @@ var Network = (function () {
                                 return;
                             }
 
-                            var socket = new Socket(socketId, port, UDP_TYPE);
-                            sockets[UDP_TYPE].push(socket);
-                            multicastSocket = socket;
+//                            var socket = new Socket(socketId, port, UDP_TYPE);
+//                            sockets[UDP_TYPE].push(socket);
+                            multicastSocket = new Socket(socketId, port, UDP_TYPE);
 
                             // Join the multicast group where replication occurs
                             chrome.sockets.udp.joinGroup(socketId, ReplicationProtocol.MulticastIP, function (result) {
@@ -443,8 +554,8 @@ var Network = (function () {
 
                                 // Debugging: list the multicast groups joined
                                 chrome.sockets.udp.getJoinedGroups(socketId, function (val) {
-                                    console.log("[" + socketId + "] joined groups for ip " + ReplicationProtocol.MulticastIP + " [sockeId:" + socketId + "]");
-                                    console.log(val);
+                                    debug("[" + socketId + "] joined groups for ip " + ReplicationProtocol.MulticastIP + " [sockeId:" + socketId + "]");
+                                    debug(val);
                                 });
 
                             });
@@ -454,25 +565,6 @@ var Network = (function () {
                     });
                 });
             });
-        }
-
-        /**
-         *
-         * @param resolve
-         * @param type
-         * @param port
-         * @param onReceive
-         */
-        function createMulticastSocket(resolve, type, port, onReceive) {
-
-            if (type == TCP_TYPE) {
-                createMulticastTCPSocket(resolve, port);
-            } else if (type == UDP_TYPE) {
-                createMuticastUDPSocket(resolve, port, onReceive);
-            } else {
-                log("Error: Multicast socket type not identified.");
-            }
-
         }
 
         /**
@@ -538,24 +630,24 @@ var Network = (function () {
              * @param msg
              * @returns {boolean}
              */
-            sendUDPMessage: function (ip, port, msg) {
-
-                var m = new Message(type, msg);
-
-                if (UDP_CREATED == false) {
-                    debug("Trying to send message, but no UDP socket created. Queueing the message.");
-                    m.ip = ip;
-                    m.port = port;
-                    pendingMessages.push(m);
-                    return false;
-                }
-
-                debug("Sending inline, not delayed.");
-
-                sendUDPMessage(ip, port, m);
-
-                return true;
-            },
+//            sendUDPMessage: function (ip, port, msg) {
+//
+//                var m = new Message(type, msg);
+//
+//                if (UDP_CREATED == false) {
+//                    debug("Trying to send message, but no UDP socket created. Queueing the message.");
+//                    m.ip = ip;
+//                    m.port = port;
+//                    pendingMessages.push(m);
+//                    return false;
+//                }
+//
+//                debug("Sending inline, not delayed.");
+//
+//                sendUDPMessage(ip, port, m);
+//
+//                return true;
+//            },
 
             /**
              * Send multicast message over UDP
@@ -567,8 +659,8 @@ var Network = (function () {
              */
             sendMulticastMessage: function (multicastIp, port, messageObj, callback) {
 
-                if (UDP_MULTICAST_CREATED == false) {
-                    debug("Trying to send multicast message, but no UDP socket created. Queueing the message.");
+                if (!hasMulticastSocket(UDP_TYPE, port)) {
+                    debug("Trying to send multicast message, but no multicast UDP socket created. Queueing the message.");
                     messageObj.ip = multicastIp;
                     messageObj.port = port;
                     messageObj.callback = callback;
@@ -591,29 +683,69 @@ var Network = (function () {
              * @param port
              * @param onReceive
              */
-            createMulticastSocket: function (type, port, onReceive) {
+            createMulticastSocket: function (port, onReceive) {
 
-                debug("Creating socket with type[" + type + "] and port[" + port + "]");
+                debug("Creating UDP Multicast socket on port[" + port + "]");
 
-                var checkUDPSocketCreation = function (ip) {
-                    debug("Created socket for IP: " + ip);
-
-                    var allCreated = true;
-
-                    if (!hasSocket(UDP_TYPE, port)) {
-                        allCreated = false;
-                    }
-
-                    if (allCreated) {
-                        debug("All network interfaces DO have a socket of type[" + type + "]");
-                        setUDPCreatedFlag(true);
-                    } else {
-                        debug("All network interfaces DO NOT have a socket of type[" + type + "]");
-                    }
-
+                var checkUDPSocketCreation = function () {
+                    debug("Created multicast UDP socket on [" + port + "].");
+                    setMulticastUDPCreatedFlag(true);
                 }
 
-                createMulticastSocket(checkUDPSocketCreation, type, port, onReceive);
+                createMuticastUDPSocket(checkUDPSocketCreation, port, onReceive);
+            },
+
+
+//            createSocket: function (type, port, onReceive) {
+//                debug("Creating socket with type[" + type + "] and port[" + port + "]");
+//
+//                createTCPSocket(port, onReceive);
+//            },
+
+
+            createTCPServerSockets: function (onReceive) {
+
+                var onAccept = function (info) {
+                    var socketId = info.socketId;
+                    var clientSocketId = info.clientSocketId;
+
+                    debug("Connection on socket [" + socketId + "] accepted. Should reply through socket [" + clientSocketId + "]", info);
+
+                    // should unpause the socket
+                    chrome.sockets.tcp.setPaused(clientSocketId, false, function () {
+                        debug("Socket unpaused.");
+                    });
+                };
+
+                chrome.sockets.tcpServer.onAccept.addListener(onAccept);
+
+                var onReceive_tpZ9u193HAY9 = function (data){
+
+                    var socketId = data.socketId;
+                    var msg = Message.CreateFromRawData(Message.Types.IN, data.data);
+
+
+
+                    onReceive(msg, socketId);
+                };
+
+                chrome.sockets.tcp.onReceive.addListener(onReceive_tpZ9u193HAY9);
+
+                var tcpServerSocketCreated = function () {
+                    if (networkInterfaces.length == tcpServerSockets.length) {
+                        debug("All TCP server sockets created.");
+                    }
+                };
+
+                networkInterfaces.forEach(function (ni) {
+                    createTCPServerSocket(tcpServerSocketCreated, ni.ip, DirectReplicationProtocol.Port);
+                });
+
+            },
+
+
+            sendMessageThroughNewSocket: function (peerIp, peerPort, msg) {
+                sendMessageThroughNewSocket(peerIp, peerPort, msg);
             },
 
             /**
@@ -631,7 +763,7 @@ var Network = (function () {
                         var regEx = new RegExp('^[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*$');
                         if (regEx.test(el.address) == true) {
                             networkInterfaces[networkInterfaces.length] = new NetworkInterface(el.address, el.prefixLength, el.name);
-                            identityString += "|"+el.address;
+                            identityString += "|" + el.address;
                         }
                     });
 
@@ -642,7 +774,7 @@ var Network = (function () {
 
                     c.setReplicaIdentity(identity);
 
-                    log("After hashing: "+ identity.toString());
+                    log("After hashing: " + identity.toString());
 
                     resolve();
                 });
