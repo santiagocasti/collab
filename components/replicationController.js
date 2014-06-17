@@ -5,13 +5,13 @@ var ReplicationController = (function () {
         var c = Context.getInstance();
         var ri = c.getReplicaIdentity();
 
-        var payload = ReplicationPayload.new(
+        var payload = MessagePayload.new(
                 ReplicationProtocol.PayloadTypes.IDENTITY,
                 1,
                 ri.toString()
         );
 
-        var msg = Message.Create(ReplicationProtocol.MessageTypes.OUT, payload);
+        var msg = Message.Create(Message.Types.OUT, payload);
 
         log("Sharing identity as:", msg);
         msg.log();
@@ -40,15 +40,15 @@ var ReplicationController = (function () {
 
         ReplicateCounter: function (counter) {
 
-            debug("Replicating counter: ", counter.toJSON());
+            debug("Replicating counter: " + counter.toJSON());
 
-            var payload = ReplicationPayload.new(
+            var payload = MessagePayload.new(
                     ReplicationProtocol.PayloadTypes.COUNTER,
                     counter.getId(),
                     counter.toJSON()
             );
 
-            var msg = Message.Create(ReplicationProtocol.MessageTypes.OUT, payload);
+            var msg = Message.Create(Message.Types.OUT, payload);
 
             var counterReplicated_r6yWxvuw84mr = (function () {
                 debug("Counter replicated: ", payload.toJSON());
@@ -66,10 +66,10 @@ var ReplicationController = (function () {
          * @param rawMsg
          * @constructor
          */
-        HandleMessage: function (rawMsg) {
+        HandleMulticastReplicationMessage: function (rawMsg) {
             debug("Replication Controller handle message: ", rawMsg);
 
-            var repMsg = Message.CreateFromRawData(ReplicationProtocol.MessageTypes.IN, rawMsg.data);
+            var repMsg = Message.CreateFromRawData(Message.Types.IN, rawMsg.data);
             debug("Replication message received:", repMsg);
 
             var payload = repMsg.getPayload();
@@ -91,7 +91,7 @@ var ReplicationController = (function () {
                     break;
                 case ReplicationProtocol.PayloadTypes.IDENTITY:
 
-                    log("Received peer identity: " + payload.toString());
+                    log("Received peer identity: " + payload.toJSON());
 
                     var c = Context.getInstance();
                     var content = "" + JSON.parse(payload.getContent());
@@ -110,8 +110,29 @@ var ReplicationController = (function () {
                     break;
                 default:
             }
+        },
 
 
+        SendDirectReplicationRequest: function (peerIdentity) {
+            log("Sending data replication request.");
+
+            var n = Network.getInstance();
+
+            var payload = MessagePayload.new(
+                    DirectReplicationProtocol.PayloadTypes.REQUEST,
+                    0,
+                    "" + new Date().getTime()
+            );
+
+            var msg = Message.Create(Message.Types.OUT, payload);
+
+            n.sendMessageThroughNewSocket(peerIdentity.getIpAddress(), DirectReplicationProtocol.Port, msg);
+
+        },
+
+        HandleDirectReplicationMessage: function (msg, socketId) {
+            debug("Received a message through socket ["+socketId+"]");
+            debug("The message contained the following information: ", msg.getPayload().toJSON());
         }
     };
 })();
