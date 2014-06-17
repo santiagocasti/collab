@@ -1,257 +1,6 @@
-var DirectReplicationProtocol = (function () {
-    const PORT = 2345;
-
-    const DIRECT_REQUEST = 201;
-    const DIRECT_RESPONSE = 202;
-
-    return {
-        Port: PORT,
-        PayloadTypes: {
-            REQUEST: DIRECT_REQUEST,
-            RESPONSE: DIRECT_RESPONSE
-        },
-
-        IsValidPayloadType: function (pt) {
-            switch (parseInt(pt)) {
-                case DIRECT_REQUEST:
-                case DIRECT_RESPONSE:
-                    return true;
-                    break;
-                default:
-                    return false;
-            }
-        }
-    }
-})();
-
 /**
- * ReplicationP - Replication Protocol constants
+ * Network class
  */
-var ReplicationProtocol = (function () {
-
-    const COUNTER_PAYLOAD = 101;
-    const IDENTITY_PAYLOAD = 102;
-
-    const PORT = 1234;
-    const MULTICAST_IP = "237.132.123.123";
-
-    return{
-        Port: PORT,
-
-        MulticastIP: MULTICAST_IP,
-
-        PayloadTypes: {
-            COUNTER: COUNTER_PAYLOAD,
-            IDENTITY: IDENTITY_PAYLOAD
-        },
-
-        IsValidPayloadType: function (pt) {
-            switch (parseInt(pt)) {
-                case COUNTER_PAYLOAD:
-                case IDENTITY_PAYLOAD:
-                    return true;
-                    break;
-                default:
-                    return false;
-            }
-        }
-    }
-})();
-
-var MessagePayload = (function () {
-
-    function init(t, oId, c) {
-        var type = t;
-        var objectId = oId;
-        var content = c;
-
-        return {
-            getType: function () {
-                return type;
-            },
-
-            getObjectId: function () {
-                return objectId;
-            },
-
-            getContent: function () {
-                return content;
-            },
-
-            toJSON: function () {
-                var obj = {};
-                obj.type = type;
-                obj.objectId = objectId;
-                obj.content = content;
-                return JSON.stringify(obj);
-            }
-        }
-    }
-
-    function reconstructFromObject(obj) {
-
-        var type, objectId, content;
-        if (obj.type) {
-            type = obj.type;
-        }
-        if (obj.objectId) {
-            objectId = obj.objectId;
-        }
-        if (obj.content) {
-            content = obj.content;
-        }
-
-        return init(type, objectId, content);
-    }
-
-    return {
-        new: function (type, objectId, content) {
-            return init(type, objectId, content);
-        },
-        reconstruct: function (jsonString) {
-            return reconstructFromObject(jsonString);
-        }
-    }
-
-})();
-
-/**
- * Message class
- */
-var Message = (function () {
-
-    const MESSAGE_IN = 501;
-    const MESSAGE_OUT = 502;
-
-    function init(t, p) {
-
-        var type = t;
-        var payload = p;
-
-        return {
-            getPreparedContent: function () {
-                var strPayload = payload.toJSON();
-                return MessageEncoder.str2ab(strPayload);
-            },
-
-            getType: function () {
-                return type;
-            },
-
-            getPayload: function () {
-                return payload;
-            },
-
-            log: function () {
-                log("type: " + type);
-                log("payload: " + payload.toJSON(), payload);
-            }
-        }
-    }
-
-    return{
-
-        CreateFromRawData: function (type, rawMessage) {
-            var payload = MessageEncoder.ab2str(rawMessage);
-            return init(type, MessagePayload.reconstruct(JSON.parse(payload)));
-        },
-
-        Create: function (type, payload) {
-            return init(type, payload);
-        },
-
-        Types: {
-            IN: MESSAGE_IN,
-            OUT: MESSAGE_OUT
-        }
-
-    }
-})();
-
-/**
- * Receiver class
- * @param ip
- * @param port
- * @constructor
- */
-function Receiver(ip, port) {
-    this.ip = ip;
-    this.port = port;
-}
-
-/**
- * Socket class
- * @param id
- * @param port
- * @param protocol
- * @constructor
- */
-function Socket(id, port, protocol) {
-    this.id = id;
-    this.port = port;
-    this.protocol = protocol;
-}
-
-/**
- *
- * @param ip
- * @param netmask
- * @param name
- * @constructor
- */
-function NetworkInterface(ip, netmask, name) {
-
-    const PEER_REPLICATION_TYPE = 1;
-    const SERVER_REPLICATION_TYPE = 2;
-    const PEER_DISCOVERY = 3;
-
-    this.ip = ip;
-    this.netmask = netmask;
-    this.name = name;
-    this.sockets = [];
-
-    this.getSocketByPortAndType = function (port, type) {
-        var result;
-        console.log("We have " + this.sockets.length + " sockets.");
-        this.sockets.forEach(function (socket) {
-            if (socket.port == port &&
-                    socket.protocol == type) {
-                console.log("socket.port[" + socket.port + "] == port[" + port + "] && socket.protocol[" + socket.protocol + "] == type[" + type + "]");
-                result = socket;
-            }
-        });
-        return result;
-    };
-
-    this.getMulticastAddress = function () {
-        return ReplicationProtocol.MulticastIP;
-    }
-}
-
-/**
- * Message Encoder class
- * Performs transformations between string and ArrayBuffer
- */
-var MessageEncoder = (function () {
-
-    return {
-        ab2str: function (buf) {
-            return String.fromCharCode.apply(null, new Uint16Array(buf));
-        },
-
-        str2ab: function (str) {
-            var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
-            var bufView = new Uint16Array(buf);
-            for (var i = 0, strLen = str.length; i < strLen; i++) {
-                bufView[i] = str.charCodeAt(i);
-            }
-            return buf;
-        }
-    };
-
-})();
-
-
 var Network = (function () {
 
     // Instance stores a reference to the Singleton
@@ -331,7 +80,7 @@ var Network = (function () {
         function hasMulticastSocket(protocol, port) {
 
             if (protocol !== UDP_TYPE &&
-                    port !== ReplicationProtocol.Port) {
+                    port !== MulticastReplicationProtocol.Port) {
                 log("Multicast socket not created");
                 return false;
             } else if (typeof multicastSocket !== 'undefined') {
@@ -543,7 +292,7 @@ var Network = (function () {
                             multicastSocket = new Socket(socketId, port, UDP_TYPE);
 
                             // Join the multicast group where replication occurs
-                            chrome.sockets.udp.joinGroup(socketId, ReplicationProtocol.MulticastIP, function (result) {
+                            chrome.sockets.udp.joinGroup(socketId, MulticastReplicationProtocol.MulticastIP, function (result) {
 
                                 if (result < 0) {
                                     handleSocketCreationError(result, 5);
@@ -554,7 +303,7 @@ var Network = (function () {
 
                                 // Debugging: list the multicast groups joined
                                 chrome.sockets.udp.getJoinedGroups(socketId, function (val) {
-                                    debug("[" + socketId + "] joined groups for ip " + ReplicationProtocol.MulticastIP + " [sockeId:" + socketId + "]");
+                                    debug("[" + socketId + "] joined groups for ip " + MulticastReplicationProtocol.MulticastIP + " [sockeId:" + socketId + "]");
                                     debug(val);
                                 });
 

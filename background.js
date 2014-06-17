@@ -21,7 +21,7 @@ promise.then(function () {
     });
 
     debug("Starting the multicast socket creation part....");
-    n.createMulticastSocket(ReplicationProtocol.Port, replicationDataReceived_DxmWj16N13ZH);
+    n.createMulticastSocket(MulticastReplicationProtocol.Port, replicationDataReceived_DxmWj16N13ZH);
 
 }).then(function () {
             var replicationDirectRequest_EzgZfgrrft44 = (function (msg, socket) {

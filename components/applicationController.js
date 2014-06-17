@@ -23,7 +23,7 @@ var ApplicationController = (function () {
             }
 
             // replicate the new created data
-            var msg = Message.Create(ReplicationProtocol.MessageTypes.OUT, message);
+            var msg = Message.Create(Message.Types.OUT, message);
             debug("Message created for replication: ", msg);
 
             ReplicationController.Replicate(msg, callback_123987ioslk);
@@ -104,6 +104,8 @@ var ApplicationController = (function () {
                 ReplicationController.ReplicateCounter(onlineUserCounter);
 
                 ReplicationController.SharePeerIdentity();
+
+//                ReplicationController.TriggerDirectReplicationRequest();
             },
 
             appClosed: function () {

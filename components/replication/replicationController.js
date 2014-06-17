@@ -6,7 +6,7 @@ var ReplicationController = (function () {
         var ri = c.getReplicaIdentity();
 
         var payload = MessagePayload.new(
-                ReplicationProtocol.PayloadTypes.IDENTITY,
+                MulticastReplicationProtocol.PayloadTypes.IDENTITY,
                 1,
                 ri.toString()
         );
@@ -35,7 +35,7 @@ var ReplicationController = (function () {
             debug("Replication controller, replicating:", msg);
 
             var n = Network.getInstance();
-            n.sendMulticastMessage(ReplicationProtocol.MulticastIP, ReplicationProtocol.Port, msg, callback);
+            n.sendMulticastMessage(MulticastReplicationProtocol.MulticastIP, MulticastReplicationProtocol.Port, msg, callback);
         },
 
         ReplicateCounter: function (counter) {
@@ -43,7 +43,7 @@ var ReplicationController = (function () {
             debug("Replicating counter: " + counter.toJSON());
 
             var payload = MessagePayload.new(
-                    ReplicationProtocol.PayloadTypes.COUNTER,
+                    MulticastReplicationProtocol.PayloadTypes.COUNTER,
                     counter.getId(),
                     counter.toJSON()
             );
@@ -75,7 +75,7 @@ var ReplicationController = (function () {
             var payload = repMsg.getPayload();
 
             switch (payload.getType()) {
-                case ReplicationProtocol.PayloadTypes.COUNTER:
+                case MulticastReplicationProtocol.PayloadTypes.COUNTER:
 
                     log("Received counter replication: ", payload);
 
@@ -89,7 +89,7 @@ var ReplicationController = (function () {
                     appController.setOnlineUsersCounter(newCounter);
 
                     break;
-                case ReplicationProtocol.PayloadTypes.IDENTITY:
+                case MulticastReplicationProtocol.PayloadTypes.IDENTITY:
 
                     log("Received peer identity: " + payload.toJSON());
 
