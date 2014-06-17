@@ -8,16 +8,16 @@
     "app": {
         "background": {
             "scripts": [
-                "components/hashing.js",
-                "components/replicaIdentity.js",
-                "components/peerIdentity.js",
-                "components/loggingUtils.js",
-                "components/networking.js",
-                "components/messagePassingCommons.js",
-                "components/backEndMessaging.js",
-                "components/replicationController.js",
+                "components/util/hashing.js",
+                "components/replication/replicaIdentity.js",
+                "components/replication/peerIdentity.js",
+                "components/util/loggingUtils.js",
+                "components/net/networking.js",
+                "components/messaging/messagePassingCommons.js",
+                "components/messaging/backEndMessaging.js",
+                "components/replication/replicationController.js",
                 "components/applicationController.js",
-                "components/crdt.js",
+                "components/crdt/crdt.js",
                 "components/context.js",
                 "background.js"
             ]
