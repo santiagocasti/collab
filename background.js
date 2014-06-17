@@ -16,14 +16,22 @@ promise.then(function () {
      * This callback is used when new data arrives from the replication socket.
      * @param data
      */
-    var replicationDataReceived = (function (data) {
-        ReplicationController.HandleMessage(data);
+    var replicationDataReceived_DxmWj16N13ZH = (function (data) {
+        ReplicationController.HandleMulticastReplicationMessage(data);
     });
 
-    debug("Starting the socket creation part....");
-    n.createMulticastSocket(n.UDP_TYPE, ReplicationProtocol.Port, replicationDataReceived);
+    debug("Starting the multicast socket creation part....");
+    n.createMulticastSocket(ReplicationProtocol.Port, replicationDataReceived_DxmWj16N13ZH);
 
-});
+}).then(function () {
+            var replicationDirectRequest_EzgZfgrrft44 = (function (msg, socket) {
+                ReplicationController.HandleDirectReplicationMessage(msg, socket);
+            })
+
+            debug("Starting the TCP socket creation part");
+            n.createTCPServerSockets(replicationDirectRequest_EzgZfgrrft44);
+
+        });
 
 // Add a listener to the internal message passing mechanism of the app
 function callback_oAk9bgKDjyjd(message, sender, sendResponse) {
