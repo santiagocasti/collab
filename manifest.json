@@ -31,6 +31,12 @@
             "bind": "",
             "send": "",
             "multicast-membership" : ""
+        },
+        "tcp": {
+            "connect": ""
+        },
+        "tcpServer": {
+            "listen": ""
         }
     },
 
