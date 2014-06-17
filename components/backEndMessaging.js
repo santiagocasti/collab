@@ -22,8 +22,7 @@ var BackEndMessaging = (function () {
                 return;
             }
 
-            debug("We should process this message:");
-            debug(rawMessage);
+            debug("We should process this message:", rawMessage);
 
             var message = MessagePassing.ParseMessage(rawMessage);
 
@@ -50,6 +49,15 @@ var BackEndMessaging = (function () {
                     debug("Received a message to print the peer list");
                     var c = Context.getInstance();
                     c.printPeerList();
+
+                    var peers = c.getAllPeers();
+                    if (peers.length > 0){
+                        log("Sending direct replication request to peer:", peers[0]);
+                        ReplicationController.SendDirectReplicationRequest(peers[0]);
+                    }else{
+                        log("NOT Sending direct replication request.");
+                    }
+
                     break;
                 default:
                     debug("Received message that should not handle [" + message.type + "]: ", message);
