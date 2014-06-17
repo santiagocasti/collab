@@ -65,6 +65,14 @@ var Context = (function () {
                 return false;
             },
 
+            getAllPeers: function(){
+                var result = [];
+                for (var key in peers){
+                    result.push(peers[key]);
+                }
+                return result;
+            },
+
             printPeerList: function (){
                 log("There are "+Object.keys(peers).length+" peers.");
                 for (var key in peers){
