@@ -4,7 +4,8 @@ describe("CRDTs counters ", function () {
     it("can be initialized with an empty value", function () {
 
         // create an empty counter
-        var c = CRDT.newCounter(1, {}, {});
+        var id = 1;
+        var c = CRDT.newCounter(id, {}, {});
         var repId = "5f43df3ed3.123123";
 
         // check that the count is 0
@@ -23,7 +24,7 @@ describe("CRDTs counters ", function () {
         var jsonString = c.toJSON();
 
         // check that the JSON representation is correct
-        expect(jsonString).toEqual('{"increment":{"'+repId+'":1},"decrement":{"'+repId+'":1}}');
+        expect(jsonString).toEqual('{"id":'+id+',"increment":{"'+repId+'":1},"decrement":{"'+repId+'":1}}');
 
         // create a new counter from the JSON produced by the first counter
         var c2 = CRDT.newCounterFromJSON(1, JSON.parse(jsonString));

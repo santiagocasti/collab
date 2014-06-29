@@ -126,6 +126,7 @@ var CRDT = (function () {
 
         function encodeToJSON(){
             var bag = {};
+            bag['id'] = id;
             bag['increment'] = incrementCount;
             bag['decrement'] = decrementCount;
             return JSON.stringify(bag);
@@ -380,6 +381,10 @@ var CRDT = (function () {
 
         newCounterFromJSON: function (id, jsonBag) {
 
+            if (typeof jsonBag === "string"){
+                jsonBag = JSON.parse(jsonBag);
+            }
+
             var increment = {};
             if (jsonBag['increment']) {
                 increment = jsonBag['increment'];
@@ -388,6 +393,10 @@ var CRDT = (function () {
             var decrement = {};
             if (jsonBag['decrement']) {
                 decrement = jsonBag['decrement'];
+            }
+
+            if (id === 0){
+                id = jsonBag['id'];
             }
 
             return CRDT.newCounter(id, increment, decrement);
