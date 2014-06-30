@@ -56,17 +56,22 @@ var ApplicationController = (function () {
             // TODO: add permanent storage
         }
 
-        function updateCounter(count) {
-            var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.USER_COUNT_UPDATED, count);
-            debug("Message for frontend: ", msg);
+        function notifyFrontEndAboutOnlineUserCounter(){
+           log("Sending message to front-end with new online user count: "+onlineUserCounter.getCount());
+            var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.USER_COUNT_UPDATED, onlineUserCounter.getCount());
             BackEndMessaging.sendMessage(msg);
         }
 
         function setCounter(counter) {
             onlineUserCounter = counter;
-            var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.USER_COUNT_UPDATED, counter.getCount());
-            debug("Message for frontend: ", msg);
-            BackEndMessaging.sendMessage(msg);
+        }
+
+        function mergeOnlineUserCounter(counter){
+            if (counter.getId() != 1){
+                return;
+            }
+
+            onlineUserCounter.merge(counter);
         }
 
         return {
@@ -81,6 +86,14 @@ var ApplicationController = (function () {
 
             setOnlineUsersCounter: function (counter) {
                 setCounter(counter);
+                notifyFrontEndAboutOnlineUserCounter();
+            },
+
+            newCounterReceived: function (counter){
+                if (counter.getId() == 1){
+                    mergeOnlineUserCounter(counter);
+                    notifyFrontEndAboutOnlineUserCounter();
+                }
             },
 
             getOnlineUsersCounter: function () {
@@ -100,12 +113,17 @@ var ApplicationController = (function () {
                 // set the counter to the app controller
                 setCounter(counter);
 
-                // replicate the counter
                 ReplicationController.ReplicateCounter(onlineUserCounter);
 
                 ReplicationController.SharePeerIdentity();
 
-//                ReplicationController.TriggerDirectReplicationRequest();
+                // callback to send a direct replication request
+                var callback_a4GMHVoaATHu = function(){
+                    ReplicationController.StartDirectReplication();
+                }
+
+                // when a new peer is added, this callback will be called
+                c.addCallbackForEvent(Context.Event.NEW_PEER, callback_a4GMHVoaATHu);
             },
 
             appClosed: function () {
