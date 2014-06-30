@@ -12,6 +12,10 @@ app.controller('InteractionCtrl', function ($scope) {
     $scope.onlineUserCount = 0;
     $scope.onlineUserCountString = "";
 
+    $scope.cellClicked = function () {
+        console.log("Cell clicked");
+    }
+
     $scope.addRow = function () {
 //        $scope.rows[$scope.rows.length] = {
 //            'cells': [
@@ -27,6 +31,13 @@ app.controller('InteractionCtrl', function ($scope) {
 
     $scope.printPeersList = function () {
         var msg = MessagePassing.MessageToBack(MessagePassing.MessageTypes.PRINT_PEER_LIST, $scope.messageContent);
+        console.log("Requesting that direct replication request is sent.");
+        var fem = FrontEndMessaging.getInstance();
+        fem.sendMessage(msg);
+    }
+
+    $scope.sendDirectReplicationRequest = function () {
+        var msg = MessagePassing.MessageToBack(MessagePassing.MessageTypes.PERFORM_DIRECT_REPLICATION_REQUEST, $scope.messageContent);
         console.log("Requesting that peers list is printed.");
         var fem = FrontEndMessaging.getInstance();
         fem.sendMessage(msg);

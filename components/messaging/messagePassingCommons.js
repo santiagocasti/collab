@@ -17,6 +17,7 @@ var MessagePassing = (function () {
     const CLOSING_WINDOW_MESSAGE_TYPE = 5;
     const OPENED_WINDOW_MESSAGE_TYPE = 6;
     const PRINT_PEER_LIST_MESSAGE_TYPE = 7;
+    const DIRECT_REPLICATION_REQUEST = 8;
 
     return {
 
@@ -55,6 +56,7 @@ var MessagePassing = (function () {
             CLOSING_WINDOW: CLOSING_WINDOW_MESSAGE_TYPE,
             OPENED_WINDOW: OPENED_WINDOW_MESSAGE_TYPE,
             PRINT_PEER_LIST: PRINT_PEER_LIST_MESSAGE_TYPE,
+            PERFORM_DIRECT_REPLICATION_REQUEST: DIRECT_REPLICATION_REQUEST
         }
 
     }

@@ -49,15 +49,17 @@ var BackEndMessaging = (function () {
                     debug("Received a message to print the peer list");
                     var c = Context.getInstance();
                     c.printPeerList();
-
+                    break;
+                case MessagePassing.MessageTypes.PERFORM_DIRECT_REPLICATION_REQUEST:
+                    debug("Received a to perform direct replication");
+                    var c = Context.getInstance();
                     var peers = c.getAllPeers();
-                    if (peers.length > 0){
-                        log("Sending direct replication request to peer:", peers[0]);
+                    if (peers.length > 0) {
+                        log("Sending direct replication request to peer ["+peers[0].getReplicatIdentityString()+"] at "+ peers[0].getIpAddress());
                         ReplicationController.SendDirectReplicationRequest(peers[0]);
-                    }else{
-                        log("NOT Sending direct replication request.");
+                    } else {
+                        log("NOT Sending direct replication request because we don't have enough peers.");
                     }
-
                     break;
                 default:
                     debug("Received message that should not handle [" + message.type + "]: ", message);
