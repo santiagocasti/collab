@@ -2,10 +2,16 @@ var Context = (function () {
 
     var instance;
 
+    const NEW_PEER_EVENT = 'new-peer-event';
+
     function init() {
 
         var replicaIdentity;
         var peers = {};
+        var callbacks = {};
+        callbacks[NEW_PEER_EVENT] = [];
+
+        var wasDirectReplicationPerformed = false;
 
 
         function purgePeersSet(){
@@ -43,6 +49,15 @@ var Context = (function () {
 
         }
 
+        function triggerCallbacksFor(event){
+            if (callbacks[NEW_PEER_EVENT].length > 0){
+                var callback;
+                callbacks[NEW_PEER_EVENT].forEach(function(val){
+                    val();
+                });
+            }
+        }
+
         return {
             setReplicaIdentity: function (identity) {
                 replicaIdentity = identity;
@@ -52,13 +67,28 @@ var Context = (function () {
                 return replicaIdentity;
             },
 
+            setDirectReplicationFlag: function(value){
+                if (value === true || value === false){
+                    wasDirectReplicationPerformed = value;
+                }
+            },
+
+            getDirectReplicationFlag: function(){
+                return wasDirectReplicationPerformed;
+            },
+
             addPeer: function (peer) {
                 peers[peer.getReplicaIdentityString()] = peer;
                 purgePeersSet();
+                triggerCallbacksFor(NEW_PEER_EVENT);
+            },
+
+            addCallbackForEvent: function(event, callback){
+                callbacks[NEW_PEER_EVENT].push(callback);
             },
 
             getPeer: function (replicaIdentity) {
-                if (typeof peers[replicaIdentity] !== 'undefined'){
+                if (typeof peers[replicaIdentity] !== "undefined"){
                     return peers[replicaIdentity];
                 }
 
@@ -95,6 +125,10 @@ var Context = (function () {
             }
 
             return instance;
+        },
+
+        Event: {
+            NEW_PEER: NEW_PEER_EVENT
         }
 
     };
