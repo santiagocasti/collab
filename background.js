@@ -1,5 +1,9 @@
 chrome.app.runtime.onLaunched.addListener(function (launchData) {
-    chrome.app.window.create('index.html', function (win) {
+    chrome.app.window.create('index.html', {'bounds': {
+        'width': 800,
+        'height': 600
+    }, 'maxWidth': 800,
+        'maxHeight': 600}, function (win) {
         win.contentWindow.launchData = launchData;
     });
 });
@@ -13,7 +17,7 @@ var promise = new Promise(function (resolve, reject) {
 promise.then(function () {
 
     /**
-     * This callback is used when new data arrives from the replication socket.
+     * This callback is used when new data is received on the multicast replication socket.
      * @param data
      */
     var replicationDataReceived_DxmWj16N13ZH = (function (data) {
@@ -24,8 +28,14 @@ promise.then(function () {
     n.createMulticastSocket(MulticastReplicationProtocol.Port, replicationDataReceived_DxmWj16N13ZH);
 
 }).then(function () {
-            var replicationDirectRequest_EzgZfgrrft44 = (function (msg, socket) {
-                ReplicationController.HandleDirectReplicationMessage(msg, socket);
+            /**
+             * This callback is used when new data is received on any TCP socket.
+             * Only the direct replication protocol works over TCP, the other protocol
+             * works over UDP.
+             * @type {Function}
+             */
+            var replicationDirectRequest_EzgZfgrrft44 = (function (data, socket) {
+                ReplicationController.HandleDirectReplicationMessage(data, socket);
             })
 
             debug("Starting the TCP socket creation part");
