@@ -161,9 +161,28 @@ var Network = (function () {
 
         }
 
+        /**
+         *
+         * @param socketId
+         * @param messageObj
+         */
+        function sendMessageThroughExistingSocket(socketId, messageObj){
+
+            var arrayBuffer = messageObj.getPreparedContent();
+
+            chrome.sockets.tcp.send(socketId, arrayBuffer, function(sendInfo){
+                var msgPayload = messageObj.getPayload();
+                log("Sent message through socketId["+socketId+"]: "+msgPayload.toJSON());
+
+                chrome.sockets.tcp.close(socketId, function (){
+                    log("Socket with ID ["+socketId+"] closed successfully");
+                });
+            });
+
+        }
+
 
         function sendMessageThroughNewSocket(peerIp, peerPort, messageObj) {
-
 
             chrome.sockets.tcp.create({}, function (socketInfo) {
 
@@ -200,7 +219,7 @@ var Network = (function () {
                             var arrayBuffer = messageObj.getPreparedContent();
 
                             chrome.sockets.tcp.send(socketId, arrayBuffer, function (sendInfo) {
-                                debug("Message sent through TCP socket: " + messageObj.getPayload().toJSON(), messageObj);
+                                debug("Message sent through TCP socket["+socketId+"] : " + messageObj.getPayload().toJSON());
                             });
 
                         });
@@ -361,6 +380,26 @@ var Network = (function () {
             chrome.sockets.udp.send(multicastSocket.id, arrayBuffer, multicastIp, port, cb);
         }
 
+        function releaseSocket(socketId, type){
+
+            switch(type){
+                case TCP_TYPE:
+                        chrome.sockets.tcp.disconnect(socketId, function (){
+                           chrome.sockets.tcp.close(socketId, function(){
+                               log("TCP Socket with ID "+socketId+" closed correctly.");
+                           })
+                        });
+                    break;
+                case UDP_TYPE:
+                        chrome.sockets.udp.close(socketId, function (){
+                                log("UDP Socket with ID "+socketId+" closed correctly.");
+                        });
+                    break;
+                default:
+                    log("Don't know how to close socket ["+socketId+"] of type ["+type+"]");
+            }
+        }
+
 
         return {
 
@@ -469,13 +508,7 @@ var Network = (function () {
                 chrome.sockets.tcpServer.onAccept.addListener(onAccept);
 
                 var onReceive_tpZ9u193HAY9 = function (data){
-
-                    var socketId = data.socketId;
-                    var msg = Message.CreateFromRawData(Message.Types.IN, data.data);
-
-
-
-                    onReceive(msg, socketId);
+                    onReceive(data.data, data.socketId);
                 };
 
                 chrome.sockets.tcp.onReceive.addListener(onReceive_tpZ9u193HAY9);
@@ -495,6 +528,10 @@ var Network = (function () {
 
             sendMessageThroughNewSocket: function (peerIp, peerPort, msg) {
                 sendMessageThroughNewSocket(peerIp, peerPort, msg);
+            },
+
+            sendMessageThroughExistingSocket: function (socketId, msg){
+                sendMessageThroughExistingSocket(socketId, msg);
             },
 
             /**
@@ -527,9 +564,12 @@ var Network = (function () {
 
                     resolve();
                 });
+            },
 
-
+            releaseSocket: function (socketId, type){
+                releaseSocket(socketId, type);
             }
+
 
         };
 
