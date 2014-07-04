@@ -35,7 +35,7 @@
                 <table class="tg" style="width: 100%">
                     <thead>
                     <tr>
-                        <th class="tg-afp9" style=""></th>
+                        <th class="tg-afp9" style="width: 7%;"></th>
                         <th class="tg-afp9" style="">A</th>
                         <th class="tg-afp9" style="">B</th>
                         <th class="tg-afp9" style="">C</th>
@@ -48,8 +48,9 @@
                     </thead>
                     <tbody>
                     <tr data-ng-repeat="row in rows">
-                        <td data-ng-click="cellClicked()" class="tg-031e"
-                            data-ng-repeat="cell in row.cells">
+                        <td data-ng-click="cellClicked(cell.row, cell.col)" class="tg-031e"
+                            data-ng-repeat="cell in row.cells"
+                            id="cell{{cell.row}}-{{cell.col}}">
                             {{cell.value}}
                         </td>
                     </tr>
@@ -69,8 +70,8 @@
         <!--</ul>-->
     </section>
     <script src="node_modules/angularjs-1.2.16.js" type="text/javascript"></script>
+    <script src="components/jquery/external/jquery/jquery.js" type="text/javascript"></script>
     <script src="components/util/loggingUtils.js" type="text/javascript"></script>
-    <script src="components/util/tabs.js" type="text/javascript"></script>
     <script src="components/messaging/messagePassingCommons.js" type="text/javascript"></script>
     <script src="components/messaging/frontEndMessaging.js" type="text/javascript"></script>
     <script src="components/interactionLogic.js" type="text/javascript"></script>

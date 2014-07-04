@@ -12,8 +12,70 @@ app.controller('InteractionCtrl', function ($scope) {
     $scope.onlineUserCount = 0;
     $scope.onlineUserCountString = "";
 
-    $scope.cellClicked = function () {
-        console.log("Cell clicked");
+    $scope.cellClicked = function (row, col) {
+
+        // if we are editing this cell, ignore the click
+        if ($scope.rows[row].cells[col].edit === true) {
+            log("Ignoring click cause we are editing this cell.");
+            return;
+        }
+
+        $scope.rows[row].cells[col].edit = true;
+
+        log("Cell clicked [" + row + "," + col + "]");
+
+        // get the cell
+        var $cell = $("#cell" + row + "-" + col);
+
+        // add an input
+        var $input = $('<input>').attr({
+            id: 'editCell',
+            name: 'bar',
+            class: "inputEditCell"
+        });
+
+        // set the value of input to the cell content
+        $input.val($cell.html().trim());
+
+        // remove all the children
+        $cell.empty();
+
+        // append the input to the cell
+        $cell.append($input);
+
+        // refresh styling
+        $cell.hide().show();
+
+        // focus on the input
+        $input.focus();
+
+        var callback_j2h3l4kjhdlaks = function (event) {
+            // get the value of the input
+            var value = $input.val();
+
+            $cell.hide();
+
+            // clean the cell content
+            $cell.empty();
+            // set the cell content
+            $cell.text(value);
+            // set editing flag to false
+
+            $cell.show();
+
+            $scope.rows[row].cells[col].edit = false;
+
+        };
+
+        // when you hit 'intro' is like a submit for this control
+        $input.keydown(function (event) {
+            if (event.keyCode == 13) {
+                callback_j2h3l4kjhdlaks(event);
+            }
+        });
+
+        $input.blur(callback_j2h3l4kjhdlaks);
+
     }
 
     $scope.addRow = function () {
@@ -101,15 +163,15 @@ app.controller('InteractionCtrl', function ($scope) {
         for (i = 0; i < 15; ++i) {
             $scope.rows[$scope.rows.length] = {
                 'cells': [
-                    {'value': $scope.rows.length + 1},
-                    {'value': names[getRandomInt(0, names.length-1)]},
-                    {'value': category[getRandomInt(0, category.length-1)]},
-                    {'value': shop[getRandomInt(0, shop.length-1)]},
-                    {'value': getRandomInt(0, 150)},
-                    {'value': " "},
-                    {'value': " "},
-                    {'value': " "},
-                    {'value': " "}
+                    {'value': $scope.rows.length + 1, 'row': i, 'col': 0, 'edit': false, 'class': (i==14? "left bottom": 'left')},
+                    {'value': names[getRandomInt(0, names.length - 1)], 'row': i, 'col': 1, 'edit': false, 'class': (i==14? "bottom" : "")},
+                    {'value': category[getRandomInt(0, category.length - 1)], 'row': i, 'col': 2, 'edit': false, 'class': (i==14? "bottom" : "")},
+                    {'value': shop[getRandomInt(0, shop.length - 1)], 'row': i, 'col': 3, 'edit': false, 'class': (i==14? "bottom" : "")},
+                    {'value': getRandomInt(0, 150), 'row': i, 'col': 4, 'edit': false, 'class': (i==14? "bottom" : "")},
+                    {'value': " ", 'row': i, 'col': 5, 'edit': false, 'class': (i==14? "bottom" : "")},
+                    {'value': " ", 'row': i, 'col': 6, 'edit': false, 'class': (i==14? "bottom" : "")},
+                    {'value': " ", 'row': i, 'col': 7, 'edit': false, 'class': (i==14? "bottom" : "")},
+                    {'value': " ", 'row': i, 'col': 8, 'edit': false, 'class': (i==14? "right bottom": 'right')}
                 ]
             }
         }
