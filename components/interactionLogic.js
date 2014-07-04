@@ -82,6 +82,41 @@ app.controller('InteractionCtrl', function ($scope) {
         }
     }
 
+    /**
+     * Returns a random integer between min (inclusive) and max (inclusive)
+     * Using Math.round() will give you a non-uniform distribution!
+     */
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+
+    $scope.setupSpreadsheet = function () {
+
+        var names = ["James", "Ana", "John", "Alice"];
+        var category = ["Food", "Beauty", "University", "Job", "Home stuff", "Fun"];
+        var shop = ["Edeka", "Lidl", "DM", "Real", "VRN", "Kino", "Theater", "Bahn", "Meinfernbus"];
+
+        var i;
+        for (i = 0; i < 15; ++i) {
+            $scope.rows[$scope.rows.length] = {
+                'cells': [
+                    {'value': $scope.rows.length + 1},
+                    {'value': names[getRandomInt(0, names.length-1)]},
+                    {'value': category[getRandomInt(0, category.length-1)]},
+                    {'value': shop[getRandomInt(0, shop.length-1)]},
+                    {'value': getRandomInt(0, 150)},
+                    {'value': " "},
+                    {'value': " "},
+                    {'value': " "},
+                    {'value': " "}
+                ]
+            }
+        }
+
+
+    }
+
     $scope.handleMessage = function (message) {
         console.log("We are in InteractionLogic handle Message");
         console.log(message);
@@ -100,6 +135,8 @@ app.controller('InteractionCtrl', function ($scope) {
     var fem = FrontEndMessaging.getInstance();
     fem.addCallbackForEvent(FrontEndMessaging.EventType.NEW_DATA, $scope.handleMessage);
     fem.addCallbackForEvent(FrontEndMessaging.EventType.UPDATED_USER_COUNT, $scope.updateOnlineUserCount);
+
+    $scope.setupSpreadsheet();
 });
 
 function callback_fy6fhP17Zt2g(message, sender, sendResponse) {

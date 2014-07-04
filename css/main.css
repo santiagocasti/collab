@@ -69,21 +69,6 @@ body.dropping > #main {
 	pointer-events: all;
 }
 
-ul {
-	margin: 0;
-	height: 525px;
-	overflow: auto;
-}
-
-li {
-	border: 1px solid #ccc;
-	border-radius: 3px;
-	padding: 5px;
-	margin-bottom: 3px;
-	background: -webkit-linear-gradient(right, #eee, rgba(255, 255, 255, 0), #eee);
-	color: #666666;
-}
-
 #log {
 	display: block;
 }
@@ -158,50 +143,117 @@ progress {
 }
 
 html, body {
-    height: 100%;
-    /*background-color: yellow;*/
+	height: 100%;
+	/*background-color: yellow;*/
 }
 
 header {
-    width: 100%;
-    /*height: 150px;*/
-    /*background-color: blue;*/
+	width: 100%;
+	/*height: 150px;*/
+	/*background-color: blue;*/
 }
 
 header nav ul li {
-    display: inline;
-    padding: 0 30px 0 0;
-    float: left;
+	display: inline;
+	padding: 0 30px 0 0;
+	float: left;
 }
 
 #wrapper {
-    min-height: 100%;
-    height: auto !important;
-    height: 100%;
-    margin: 0 0 -30px 0; /* the bottom margin is the negative value of the footer's height */
-    position: relative;
+	min-height: 100%;
+	height: auto !important;
+	height: 100%;
+	margin: 0 0 -30px 0; /* the bottom margin is the negative value of the footer's height */
+	position: relative;
 }
 
 #content {
-    /*background-color: pink;*/
-    width: 400px;
-    padding: 25px 30px 25px 30px;
-    position: absolute;
-    bottom: 30px;
-    top: 150px;
-    margin-left: 100px;
+	/*background-color: pink;*/
+	width: 400px;
+	padding: 25px 30px 25px 30px;
+	position: absolute;
+	bottom: 30px;
+	top: 150px;
+	margin-left: 100px;
 }
 
 footer {
-    margin: -30px 0 0 0;
-    width: 100%;
-    height: 30px;
-    /*background-color: green;*/
+	margin: -30px 0 0 0;
+	width: 100%;
+	height: 30px;
+	/*background-color: green;*/
 	text-align: right;
 }
 
-#onlineUserInput{
+#onlineUserInput {
 	text-align: right;
 	border: none;
 	box-shadow: none;
+}
+
+.cell {
+	border: solid;
+	border-width: 1px 1px 1px 1px;
+	border-color: #000000;
+	background-color: blue;
+}
+
+.tableContainer {
+	max-height: 72%;
+	overflow: auto;
+	overflow-y: scroll;
+}
+
+.tg {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+.tg td {
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+	padding: 10px 5px;
+	border-style: solid;
+	border-width: 1px;
+	overflow: hidden;
+	word-break: normal;
+}
+
+.tg th {
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+	font-weight: normal;
+	padding: 10px 5px;
+	border-style: solid;
+	border-width: 1px;
+	overflow: hidden;
+	word-break: normal;
+}
+
+.tg .tg-afp9 {
+	background-color: #e1e1e1
+}
+
+#navbar {
+	width: 100%;
+	height: 40px;
+}
+
+#navbar ul {
+	width: 98%;
+	margin: 0 auto 0 auto;
+}
+
+#navbar ul li {
+	float: left;
+	padding: 0 5px 0 5px;
+	border-right: 1px solid #FFF;
+	border-left: 1px solid #FFF;
+	height: 40px;
+	list-style: none;
+	display: block;
+	line-height: 30px;
+	text-align: center;
+	vertical-align: middle;
+	cursor: pointer;
 }

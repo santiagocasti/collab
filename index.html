@@ -15,29 +15,35 @@
 
 
             <div id="navbar">
-            <ul>
-                <li>
-                    <button class="btn" data-ng-click="printPeersList()">Print Peer List</button>
-                </li>
-                <li>
-                    <button class="btn" data-ng-click="sendDirectReplicationRequest ()">Request Direct Replication</button>
-                </li>
-            </ul>
+                <ul>
+                    <li>
+                        <button class="btn" data-ng-click="printPeersList()">Print Peer List</button>
+                    </li>
+                    <li>
+                        <button class="btn" data-ng-click="sendDirectReplicationRequest ()">Request Direct Replication
+                        </button>
+                    </li>
+                </ul>
             </div>
 
 
-            <div>
-                Send: <input type="text" ng-model="messageContent">
-                <button class="btn" data-ng-click="addRow()">Send</button>
-            </div>
+            <!--<div>-->
+            <!--Send: <input type="text" ng-model="messageContent">-->
+            <!--<button class="btn" data-ng-click="addRow()">Send</button>-->
+            <!--</div>-->
             <div class="tableContainer">
                 <table class="tg" style="width: 100%">
                     <thead>
                     <tr>
-                        <th class="tg-afp9" style="width: 10%">ID</th>
-                        <th class="tg-afp9" style="width: 15%">From</th>
-                        <th class="tg-afp9" style="width: 15%">To</th>
-                        <th class="tg-afp9" style="width: 60%">Message</th>
+                        <th class="tg-afp9" style=""></th>
+                        <th class="tg-afp9" style="">A</th>
+                        <th class="tg-afp9" style="">B</th>
+                        <th class="tg-afp9" style="">C</th>
+                        <th class="tg-afp9" style="">D</th>
+                        <th class="tg-afp9" style="">E</th>
+                        <th class="tg-afp9" style="">F</th>
+                        <th class="tg-afp9" style="">G</th>
+                        <th class="tg-afp9" style="">H</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -55,23 +61,20 @@
 
         </div>
 
-
-</div>
-
-<!--<ul>-->
-<!--<li data-ng-repeat="msg in msgs">-->
-<!--{{msg.id}} {{msg.from}}-->
-<!--<span class="text">{{msg.content}}</span>-->
-<!--</li>-->
-<!--</ul>-->
-</section>
-<script src="node_modules/angularjs-1.2.16.js" type="text/javascript"></script>
-<script src="components/util/loggingUtils.js" type="text/javascript"></script>
-<script src="components/util/tabs.js" type="text/javascript"></script>
-<script src="components/messaging/messagePassingCommons.js" type="text/javascript"></script>
-<script src="components/messaging/frontEndMessaging.js" type="text/javascript"></script>
-<script src="components/interactionLogic.js" type="text/javascript"></script>
-</body>
+        <!--<ul>-->
+        <!--<li data-ng-repeat="msg in msgs">-->
+        <!--{{msg.id}} {{msg.from}}-->
+        <!--<span class="text">{{msg.content}}</span>-->
+        <!--</li>-->
+        <!--</ul>-->
+    </section>
+    <script src="node_modules/angularjs-1.2.16.js" type="text/javascript"></script>
+    <script src="components/util/loggingUtils.js" type="text/javascript"></script>
+    <script src="components/util/tabs.js" type="text/javascript"></script>
+    <script src="components/messaging/messagePassingCommons.js" type="text/javascript"></script>
+    <script src="components/messaging/frontEndMessaging.js" type="text/javascript"></script>
+    <script src="components/interactionLogic.js" type="text/javascript"></script>
+    </body>
 </div>
 <footer>
     <input id="onlineUserInput" type="text" ng-model="onlineUserCountString"/>
