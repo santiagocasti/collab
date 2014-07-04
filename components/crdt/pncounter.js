@@ -1,4 +1,4 @@
-var CRDT = (function () {
+var Counter = (function () {
 
     function newCounter(id, initialIncrementValues, initialDecrementValues) {
 
@@ -354,7 +354,7 @@ var CRDT = (function () {
          * @param initialCounterValues
          * @returns {*}
          */
-        newCounter: function (id, initialIncrement, initialDecrement) {
+        new: function (id, initialIncrement, initialDecrement) {
 
             if (!initialIncrement){
                 initialIncrement = {};
@@ -379,7 +379,7 @@ var CRDT = (function () {
             return newCounter(id, initialIncrement, initialDecrement);
         },
 
-        newCounterFromJSON: function (id, jsonBag) {
+        newFromJSON: function (id, jsonBag) {
 
             if (typeof jsonBag === "string"){
                 jsonBag = JSON.parse(jsonBag);
