@@ -112,6 +112,7 @@ var ApplicationController = (function () {
 
                 // set the counter to the app controller
                 setCounter(counter);
+                notifyFrontEndAboutOnlineUserCounter();
 
                 ReplicationController.ReplicateCounter(onlineUserCounter);
 

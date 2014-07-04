@@ -241,7 +241,7 @@ var ReplicationController = (function () {
 
             var repMsg = Message.CreateFromRawData(Message.Types.IN, rawMsg);
             debug("The message contained the following information: ", repMsg.getPayload().toJSON());
-            debug("Replication message received:", repMsg.toJSON());
+            debug("Replication message received:", repMsg);
 
             var payload = repMsg.getPayload();
 
