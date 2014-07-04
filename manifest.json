@@ -23,7 +23,8 @@
                 "components/messaging/backEndMessaging.js",
                 "components/replication/replicationController.js",
                 "components/applicationController.js",
-                "components/crdt/crdt.js",
+                "components/crdt/pncounter.js",
+                "components/crdt/factory.js",
                 "components/context.js",
                 "background.js"
             ]
