@@ -12,7 +12,7 @@ describe("Vector Clocks", function () {
         var identityC = ReplicaIdentity.new(idC.hashCode(), new Date().getTime());
 
         var data = {};
-        var vc = VectorClock.new(data);
+        var vc = new VectorClock(data);
         var identityACount = 0, identityBCount = 0, identityCCount = 0;
         var totalCount = 0;
 
@@ -83,7 +83,7 @@ describe("Vector Clocks", function () {
         var identityC = ReplicaIdentity.new(idC.hashCode(), new Date().getTime());
 
         var data = {};
-        var vc1 = VectorClock.new(data);
+        var vc1 = new VectorClock(data);
 
         // check initial state
         expect(vc1.tracks(identityA.toString())).toBe(false);
@@ -119,8 +119,8 @@ describe("Vector Clocks", function () {
         var identityC = ReplicaIdentity.new(idC.hashCode(), new Date().getTime());
 
         var data = {};
-        var vc1 = VectorClock.new(data);
-        var vc2 = VectorClock.new(data);
+        var vc1 = new VectorClock(data);
+        var vc2 = new VectorClock(data);
         var identityACount = 0, identityBCount = 0, identityCCount = 0;
         var totalCount = 0;
 
@@ -169,7 +169,7 @@ describe("Vector Clocks", function () {
         var identityA3 = ReplicaIdentity.new(idA.hashCode(), ts + 1123123);
 
         var data = {};
-        var vc1 = VectorClock.new(data);
+        var vc1 = new VectorClock(data);
         var totalCount = 0;
 
         vc1.increment(identityA1.toString());
@@ -233,7 +233,7 @@ describe("Vector Clocks", function () {
         var identityB = ReplicaIdentity.new(idB.hashCode(), new Date().getTime());
         var identityC = ReplicaIdentity.new(idC.hashCode(), new Date().getTime());
 
-        var vc1 = VectorClock.new({});
+        var vc1 = new VectorClock({});
 
         vc1.increment(identityA.toString());
         vc1.increment(identityB.toString());
@@ -241,7 +241,7 @@ describe("Vector Clocks", function () {
 
         var json = vc1.toJSON();
 
-        var vc2 = VectorClock.new(JSON.parse(json));
+        var vc2 = new VectorClock(JSON.parse(json));
 
         compare(vc1, vc2);
     });
