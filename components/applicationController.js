@@ -107,7 +107,7 @@ var ApplicationController = (function () {
                 var ri = c.getReplicaIdentity();
 
                 // create a counter and increment it
-                var counter = CRDT.newCounter(1, {});
+                var counter = CRDT.newCounter(1);
                 counter.increment(ri.toString());
 
                 // set the counter to the app controller
