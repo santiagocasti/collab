@@ -5,7 +5,7 @@ describe("CRDTs counters ", function () {
 
         // create an empty counter
         var id = 1;
-        var c = CRDT.newCounter(id, {}, {});
+        var c = CRDT.newCounter(id);
         var repId = "5f43df3ed3.123123";
 
         // check that the count is 0
@@ -39,7 +39,7 @@ describe("CRDTs counters ", function () {
 
     it("support increments and decrements from different replicas", function () {
 
-        var c = CRDT.newCounter(1, {}, {});
+        var c = CRDT.newCounter(1);
 
         // replica IDs
         var repIdA = "123123.545234";
@@ -111,8 +111,8 @@ describe("CRDTs counters ", function () {
             expect(c2.getCount()).toEqual(n);
         }
 
-        var c1 = CRDT.newCounter(1, {}, {});
-        var c2 = CRDT.newCounter(1, {}, {});
+        var c1 = CRDT.newCounter(1);
+        var c2 = CRDT.newCounter(1);
 
         var repId1 = "123123.1231231";
         var repId2 = "5345345.4523434";
@@ -150,7 +150,7 @@ describe("CRDTs counters ", function () {
 
     it("allow access to the replica counts", function () {
 
-        var c = CRDT.newCounter(1, {}, {});
+        var c = CRDT.newCounter(1);
         var repId = "555.5121231";
 
         // no value for replica ID given
@@ -181,7 +181,7 @@ describe("CRDTs counters ", function () {
     });
 
     it("purge the old counts of replicas", function (){
-        var c = CRDT.newCounter(1, {}, {});
+        var c = CRDT.newCounter(1);
         var id = "123123123";
         var ts = new Date().getTime();
         var ri = ReplicaIdentity.new(id, ts);
@@ -193,22 +193,20 @@ describe("CRDTs counters ", function () {
 
         ri = ReplicaIdentity.new(id, ts+1);
         var newId = ri.toString();
-        var c2 = CRDT.newCounter(1, {}, {});
+        var c2 = CRDT.newCounter(1);
 
         c2.increment(newId);
 
         expect(c.tracks(oldId)).toBe(true);
         expect(c2.tracks(newId)).toBe(true);
 
-        console.log("C before: "+ c.toJSON());
         c.merge(c2);
-        console.log("C after: "+ c.toJSON());
 
         expect(c.tracks(newId)).toBe(true);
         expect(c.tracks(oldId)).toBe(false);
 
-        c = CRDT.newCounter(1, {}, {});
-        c2 = CRDT.newCounter(1, {}, {});
+        c = CRDT.newCounter(1);
+        c2 = CRDT.newCounter(1);
 
         c.decrement(oldId);
 
