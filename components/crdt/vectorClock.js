@@ -41,18 +41,31 @@ VectorClock.prototype.compare = function (vc) {
     var bigger = 0, equal = 0, smaller = 0;
 
     for (var index in this.private.vector) {
-        if (vc.getCount(index) != false &&
-                this.private.vector[index] > vc.getCount(index)) {
+
+        if (!vc.tracks(index)){
             bigger++;
-        } else if (vc.getCount(index) != false &&
-                this.private.vector[index] === vc.getCount(index)) {
+            continue;
+        }
+
+        if (this.private.vector[index] > vc.getCount(index)) {
+            bigger++;
+        } else if (this.private.vector[index] === vc.getCount(index)) {
             equal++;
         } else {
             smaller++;
         }
     }
 
-    if (bigger > 0 && smaller > 0) {
+    var otherKeys = vc.getKeys();
+
+    otherKeys.forEach(function (element) {
+        if (!this.tracks(element)){
+            smaller++;
+        }
+    }, this);
+
+    if ((bigger > 0 && smaller > 0) ||
+        (bigger == 0 && smaller == 0)) {
         // the this.private.vectors are simultaneous
         return 0;
     } else if (bigger > 0) {
@@ -175,3 +188,11 @@ VectorClock.prototype.purge = function () {
 VectorClock.prototype.toJSON = function () {
     return JSON.stringify(this.private.vector);
 };
+
+VectorClock.prototype.print = function () {
+    log("==============================");
+    for (var key in this.private.vector){
+        log("["+key+"] => ["+this.private.vector[key]+"])");
+    }
+    log("==============================");
+}

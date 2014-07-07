@@ -245,4 +245,62 @@ describe("Vector Clocks", function () {
 
         compare(vc1, vc2);
     });
+
+    it(" can compare with each other.", function (){
+
+        var idA = "QPRvP8tvxuBe";
+        var idB = "Y241nvGS78R5";
+        var idC = "Ue9wTxxgJtNa";
+        var idD = "xLtB9kqary1Q";
+
+        var identityA = ReplicaIdentity.new(idA.hashCode(), new Date().getTime());
+        var identityB = ReplicaIdentity.new(idB.hashCode(), new Date().getTime());
+        var identityC = ReplicaIdentity.new(idC.hashCode(), new Date().getTime());
+        var identityD = ReplicaIdentity.new(idD.hashCode(), new Date().getTime());
+
+        var vc1 = new VectorClock({});
+        var vc2 = new VectorClock({});
+
+        // empty vectors: they should be considered equal when no data
+        expect(vc1.compare(vc2)).toBe(0);
+
+        vc1.increment(identityA.toString());
+        vc2.increment(identityA.toString());
+
+        // both increased same key: they should still be simultaneous/equal
+        expect(vc1.compare(vc2)).toBe(0);
+        expect(vc2.compare(vc1)).toBe(0);
+
+        vc1.increment(identityB.toString());
+        vc2.increment(identityC.toString());
+
+        // each one increased a different key: they should still be simultaneous/equal
+        expect(vc1.compare(vc2)).toBe(0);
+        expect(vc2.compare(vc1)).toBe(0);
+
+        vc1.increment(identityC.toString());
+
+        // vc1 increased the from vc2 that was missing: in this case vc1 should be bigger
+        expect(vc1.compare(vc2)).toBe(1);
+        expect(vc2.compare(vc1)).toBe(-1);
+
+        vc2.increment(identityB.toString());
+
+        // vc2 increases the key from vc1 that was missing: they should be 0 again
+        expect(vc1.compare(vc2)).toBe(0);
+        expect(vc2.compare(vc1)).toBe(0);
+
+        vc1.increment(identityD.toString());
+
+        // vc1 increments a new key: bigger again
+        expect(vc1.compare(vc2)).toBe(1);
+        expect(vc2.compare(vc1)).toBe(-1);
+
+        vc1.increment(identityA.toString());
+
+        // vc1 incremented again another key: even bigger
+        expect(vc1.compare(vc2)).toBe(1);
+        expect(vc2.compare(vc1)).toBe(-1);
+
+    });
 });
