@@ -42,7 +42,7 @@ VectorClock.prototype.compare = function (vc) {
 
     for (var index in this.private.vector) {
 
-        if (!vc.tracks(index)){
+        if (!vc.tracks(index)) {
             bigger++;
             continue;
         }
@@ -59,13 +59,13 @@ VectorClock.prototype.compare = function (vc) {
     var otherKeys = vc.getKeys();
 
     otherKeys.forEach(function (element) {
-        if (!this.tracks(element)){
+        if (!this.tracks(element)) {
             smaller++;
         }
     }, this);
 
     if ((bigger > 0 && smaller > 0) ||
-        (bigger == 0 && smaller == 0)) {
+            (bigger == 0 && smaller == 0)) {
         // the this.private.vectors are simultaneous
         return 0;
     } else if (bigger > 0) {
@@ -191,8 +191,16 @@ VectorClock.prototype.toJSON = function () {
 
 VectorClock.prototype.print = function () {
     log("==============================");
-    for (var key in this.private.vector){
-        log("["+key+"] => ["+this.private.vector[key]+"])");
+    for (var key in this.private.vector) {
+        log("[" + key + "] => [" + this.private.vector[key] + "])");
     }
     log("==============================");
+}
+
+VectorClock.prototype.clone = function () {
+    var data = {};
+    for (var key in this.private.vector) {
+        data[key] = this.private.vector[key];
+    }
+    return new VectorClock(data);
 }
