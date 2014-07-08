@@ -14,8 +14,6 @@ var CRDT = (function () {
                 jsonBag = JSON.parse(jsonBag);
             }
 
-            log("JSON BAG on counter building:", jsonBag);
-
             var increment = {};
             if (jsonBag['increment']) {
                 if (typeof jsonBag['increment'] === "string"){
@@ -39,12 +37,35 @@ var CRDT = (function () {
             return new Counter(id, increment, decrement);
         },
 
-        newRegister: function () {
-
+        newRegister: function (id) {
+            return new MVRegister(id, []);
         },
 
-        newRegisterFromJSON: function () {
+        newRegisterFromJSON: function (id, jsonBag) {
+            if (typeof jsonBag === "string") {
+                jsonBag = JSON.parse(jsonBag);
+            }
 
+            var data = [];
+            if (typeof jsonBag['data'] != 'undefined'){
+                jsonBag['data'].forEach(function (element){
+                    data[data.length] = CRDT.newRegisterValueFromSimpleObject(element);
+                });
+            }
+
+            if (id === 0) {
+                id = jsonBag['id'];
+            }
+
+            return new MVRegister(id, data);
+        },
+
+        newRegisterValueFromSimpleObject: function (data){
+            if (!data.hasOwnProperty('value') || !data['vectorClock']){
+                log("A register value cannot be created without a value and a vectorClock!!");
+                return false;
+            }
+            return new RegisterValue(new VectorClock(data['vectorClock']), data['value']);
         }
     }
 })();
