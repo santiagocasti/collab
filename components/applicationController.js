@@ -120,17 +120,32 @@ var ApplicationController = (function () {
                 return cells[id];
             },
 
-            setCell: function (id, cell) {
-                cells[id] = cell;
+            setCells: function (arrayOfCells) {
 
-                var cellToSend = {};
-                var res = id.split('-');
+                if (arrayOfCells.length == 0){
+                    return;
+                }
 
-                cellToSend.row = res[0];
-                cellToSend.col = res[1];
-                cellToSend.value = cell.getValue();
+                var cellToSend, res, allNewCells = [];
+                arrayOfCells.forEach(function (cell) {
 
-                var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.NEW_CELL_VALUE, cellToSend);
+                    // set the cell in the app controller
+                    cells[cell.getId()] = cell;
+
+                    // split the id
+                    res = cell.getId().split('-');
+
+                    // create the object to send to the front end
+                    cellToSend = {};
+                    cellToSend.row = res[0];
+                    cellToSend.col = res[1];
+                    cellToSend.value = cell.getValue();
+
+                    allNewCells.push(cellToSend);
+                });
+
+
+                var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.NEW_CELL_VALUE, allNewCells);
                 BackEndMessaging.sendMessage(msg);
             },
 

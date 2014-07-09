@@ -90,13 +90,15 @@ var ReplicationController = (function () {
         }
 
         if (typeof data.registers !== 'undefined') {
-            var regObj;
+            var regObj, cells = [];
             data.registers.forEach(function (register) {
                 regObj = CRDT.newRegisterFromJSON(0, register);
                 if (regObj instanceof MVRegister){
-                    appController.setCell(regObj.getId(), regObj);
+                    cells.push(regObj);
                 }
             });
+
+            appController.setCells(cells);
         }
 
     }
@@ -203,7 +205,7 @@ var ReplicationController = (function () {
 
                     log("Passing the following ID: "+newRegister.getId());
                     log("For the register: "+newRegister.toJSON());
-                    appController.setCell(newRegister.getId(), newRegister);
+                    appController.setCells([newRegister]);
 
                     break;
                 case MulticastReplicationProtocol.PayloadTypes.IDENTITY:
