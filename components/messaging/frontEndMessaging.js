@@ -3,16 +3,19 @@ var FrontEndMessaging = (function () {
     var instance;
     var NEW_DATA_EVENT = 1;
     var UPDATED_USER_COUNT = 2;
+    var NEW_CELL_VALUE = 3;
 
     function init() {
 
         var callbacks = [];
         callbacks[NEW_DATA_EVENT] = [];
         callbacks[UPDATED_USER_COUNT] = [];
+        callbacks[NEW_CELL_VALUE] = [];
 
         function isValidEvent(event) {
             if (event != NEW_DATA_EVENT &&
-                event != UPDATED_USER_COUNT) {
+                event != UPDATED_USER_COUNT &&
+                event != NEW_CELL_VALUE) {
                 return false;
             }
 
@@ -44,6 +47,12 @@ var FrontEndMessaging = (function () {
                     debug("Received a message updating the user count");
                     callbacks[UPDATED_USER_COUNT].forEach(function (callback) {
                         callback(message);
+                    });
+                    break;
+                case MessagePassing.MessageTypes.NEW_CELL_VALUE:
+                    debug("Received a message for setting new cell value.");
+                    callbacks[NEW_CELL_VALUE].forEach(function (callback) {
+                        callback(message.content);
                     });
                     break;
                 default:
@@ -89,7 +98,8 @@ var FrontEndMessaging = (function () {
 
         EventType: {
             NEW_DATA: NEW_DATA_EVENT,
-            UPDATED_USER_COUNT: UPDATED_USER_COUNT
+            UPDATED_USER_COUNT: UPDATED_USER_COUNT,
+            NEW_CELL_VALUE: NEW_CELL_VALUE
         },
 
         getInstance: function () {

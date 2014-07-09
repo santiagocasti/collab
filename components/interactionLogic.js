@@ -65,6 +65,8 @@ app.controller('InteractionCtrl', function ($scope) {
 
             $scope.rows[row].cells[col].edit = false;
 
+            $scope.saveCellContent(row, col, value);
+
         };
 
         // when you hit 'intro' is like a submit for this control
@@ -182,7 +184,22 @@ app.controller('InteractionCtrl', function ($scope) {
     $scope.handleMessage = function (message) {
         console.log("We are in InteractionLogic handle Message");
         console.log(message);
-        $scope.addMessage(message);
+        $scope.$apply();
+    }
+
+    $scope.updateCell = function (content) {
+
+        var value = "";
+        if (content.value.length === 1){
+            value = content.value[0];
+        }else{
+            content.value.forEach(function (element){
+                value = value + element + " | ";
+            });
+        }
+
+        $scope.rows[content.row]['cells'][content.col].value = value;
+
         $scope.$apply();
     }
 
@@ -194,8 +211,19 @@ app.controller('InteractionCtrl', function ($scope) {
         $scope.$apply();
     }
 
+    $scope.saveCellContent = function (row, column, value){
+        var fem = FrontEndMessaging.getInstance();
+        var cell = {};
+        cell.row = row;
+        cell.col = column;
+        cell.value = value;
+        var msg = MessagePassing.MessageToBack(MessagePassing.MessageTypes.NEW_CELL_VALUE, cell);
+        fem.sendMessage(msg);
+    }
+
     var fem = FrontEndMessaging.getInstance();
     fem.addCallbackForEvent(FrontEndMessaging.EventType.NEW_DATA, $scope.handleMessage);
+    fem.addCallbackForEvent(FrontEndMessaging.EventType.NEW_CELL_VALUE, $scope.updateCell);
     fem.addCallbackForEvent(FrontEndMessaging.EventType.UPDATED_USER_COUNT, $scope.updateOnlineUserCount);
 
     $scope.setupSpreadsheet();
