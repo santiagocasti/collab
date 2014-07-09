@@ -57,8 +57,8 @@ var ApplicationController = (function () {
             // TODO: add permanent storage
         }
 
-        function notifyFrontEndAboutOnlineUserCounter(){
-           log("Sending message to front-end with new online user count: "+onlineUserCounter.getCount());
+        function notifyFrontEndAboutOnlineUserCounter() {
+            log("Sending message to front-end with new online user count: " + onlineUserCounter.getCount());
             var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.USER_COUNT_UPDATED, onlineUserCounter.getCount());
             BackEndMessaging.sendMessage(msg);
         }
@@ -67,8 +67,8 @@ var ApplicationController = (function () {
             onlineUserCounter = counter;
         }
 
-        function mergeOnlineUserCounter(counter){
-            if (counter.getId() != 1){
+        function mergeOnlineUserCounter(counter) {
+            if (counter.getId() != 1) {
                 return;
             }
 
@@ -90,19 +90,18 @@ var ApplicationController = (function () {
                 notifyFrontEndAboutOnlineUserCounter();
             },
 
-            newCounterReceived: function (counter){
-                if (counter.getId() == 1){
+            newCounterReceived: function (counter) {
+                if (counter.getId() == 1) {
                     mergeOnlineUserCounter(counter);
                     notifyFrontEndAboutOnlineUserCounter();
                 }
             },
 
-            updatedCellValue: function (row, column, value){
-                var id = row+"-"+column;
+            updatedCellValue: function (row, column, value) {
+                var id = row + "-" + column;
 
                 // if we are not tracking this cell, then create the object
-                if (!cells.hasOwnProperty(id) ||
-                    !(cells[id] instanceof MVRegister)){
+                if (!cells.hasOwnProperty(id) || !(cells[id] instanceof MVRegister)) {
                     cells[id] = CRDT.newRegister(id);
                 }
 
@@ -113,15 +112,15 @@ var ApplicationController = (function () {
                 ReplicationController.ReplicateRegister(cells[id]);
             },
 
-            getCell: function (id){
-                if (!cells.hasOwnProperty(id)){
+            getCell: function (id) {
+                if (!cells.hasOwnProperty(id)) {
                     cells[id] = CRDT.newRegister(id);
                 }
 
                 return cells[id];
             },
 
-            setCell: function (id, cell){
+            setCell: function (id, cell) {
                 cells[id] = cell;
 
                 var cellToSend = {};
@@ -137,6 +136,10 @@ var ApplicationController = (function () {
 
             getOnlineUsersCounter: function () {
                 return onlineUserCounter;
+            },
+
+            getAllCells: function () {
+                return cells;
             },
 
             appStarted: function () {
@@ -158,7 +161,7 @@ var ApplicationController = (function () {
                 ReplicationController.SharePeerIdentity();
 
                 // callback to send a direct replication request
-                var callback_a4GMHVoaATHu = function(){
+                var callback_a4GMHVoaATHu = function () {
                     ReplicationController.StartDirectReplication();
                 }
 
