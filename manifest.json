@@ -25,6 +25,8 @@
                 "components/applicationController.js",
                 "components/crdt/vectorClock.js",
                 "components/crdt/pncounter.js",
+                "components/crdt/registerValue.js",
+                "components/crdt/multiValueRegister.js",
                 "components/crdt/factory.js",
                 "components/context.js",
                 "background.js"
