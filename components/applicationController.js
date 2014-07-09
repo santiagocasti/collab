@@ -6,6 +6,7 @@ var ApplicationController = (function () {
     function init() {
 
         var onlineUserCounter;
+        var cells = {};
 
         /**
          * Process data created in the current instance of the application
@@ -94,6 +95,44 @@ var ApplicationController = (function () {
                     mergeOnlineUserCounter(counter);
                     notifyFrontEndAboutOnlineUserCounter();
                 }
+            },
+
+            updatedCellValue: function (row, column, value){
+                var id = row+"-"+column;
+
+                // if we are not tracking this cell, then create the object
+                if (!cells.hasOwnProperty(id) ||
+                    !(cells[id] instanceof MVRegister)){
+                    cells[id] = CRDT.newRegister(id);
+                }
+
+                var c = Context.getInstance();
+
+                cells[id].setValue(c.getReplicaIdentity().toString(), value);
+
+                ReplicationController.ReplicateRegister(cells[id]);
+            },
+
+            getCell: function (id){
+                if (!cells.hasOwnProperty(id)){
+                    cells[id] = CRDT.newRegister(id);
+                }
+
+                return cells[id];
+            },
+
+            setCell: function (id, cell){
+                cells[id] = cell;
+
+                var cellToSend = {};
+                var res = id.split('-');
+
+                cellToSend.row = res[0];
+                cellToSend.col = res[1];
+                cellToSend.value = cell.getValue();
+
+                var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.NEW_CELL_VALUE, cellToSend);
+                BackEndMessaging.sendMessage(msg);
             },
 
             getOnlineUsersCounter: function () {
