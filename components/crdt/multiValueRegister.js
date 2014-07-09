@@ -6,6 +6,10 @@ function MVRegister(id, data) {
 
 }
 
+MVRegister.prototype.getId = function () {
+    return this.private.id;
+}
+
 MVRegister.prototype.getValue = function () {
     var result = [];
     this.private.data.forEach(function (pair) {
@@ -100,7 +104,7 @@ MVRegister.prototype.merge = function (otherRegister) {
     // add them to the final set
     finalSet = finalSet.concat(biggerOrEqualValues);
 
-    return new MVRegister(this.id, finalSet);
+    return new MVRegister(this.private.id, finalSet);
 }
 
 MVRegister.prototype.getHigherValues = function (lowestVectorClock) {
@@ -120,11 +124,11 @@ MVRegister.prototype.getHigherValues = function (lowestVectorClock) {
     return result;
 }
 
-MVRegister.prototype.toJSON = function (){
+MVRegister.prototype.toJSON = function () {
     var bag = {};
     bag['id'] = this.private.id;
     var array = [];
-    this.private.data.forEach(function (element){
+    this.private.data.forEach(function (element) {
         array[array.length] = element.toSimpleObject();
     });
     bag['data'] = array;
