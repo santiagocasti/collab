@@ -44,6 +44,10 @@ var ReplicationController = (function () {
 
         // add the registers being tracked
         data.registers = [];
+        var allRegisters = appController.getAllCells();
+        for (var index in allRegisters){
+            data.registers.push(allRegisters[index].toJSON());
+        }
 
         var payload = MessagePayload.new(
                 DirectReplicationProtocol.PayloadTypes.RESPONSE,
@@ -86,8 +90,12 @@ var ReplicationController = (function () {
         }
 
         if (typeof data.registers !== 'undefined') {
+            var regObj;
             data.registers.forEach(function (register) {
-                // do something with the registers :)
+                regObj = CRDT.newRegisterFromJSON(0, register);
+                if (regObj instanceof MVRegister){
+                    appController.setCell(regObj.getId(), regObj);
+                }
             });
         }
 
