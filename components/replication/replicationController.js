@@ -127,6 +127,30 @@ var ReplicationController = (function () {
             ReplicationController.Replicate(msg, counterReplicated_r6yWxvuw84mr);
         },
 
+        ReplicateRegister: function (register) {
+
+            if (register instanceof MVRegister){
+                debug("We received an object of the right type!");
+            }
+
+            debug("Replicating register: " + register.toJSON());
+
+            var payload = MessagePayload.new(
+                    MulticastReplicationProtocol.PayloadTypes.REGISTER,
+                    register.getId(),
+                    register.toJSON()
+            );
+
+            var msg = Message.Create(Message.Types.OUT, payload);
+
+            var registerReplicated_4uUcXKJhnbTK = (function () {
+                debug("Register replicated: ", payload.toJSON());
+            });
+
+            ReplicationController.Replicate(msg, registerReplicated_4uUcXKJhnbTK);
+
+        },
+
         SharePeerIdentity: function () {
             shareIdentity();
         },
@@ -160,14 +184,26 @@ var ReplicationController = (function () {
 
                     break;
                 case MulticastReplicationProtocol.PayloadTypes.REGISTER:
-                    log("HITTING DEAD CODE: Received a register through multicast replication.");
+                    log("Received register replication.");
+
+                    var newRegister = CRDT.newRegisterFromJSON(payload.getObjectId(), JSON.parse(payload.getContent()));
+
+                    var appController = ApplicationController.getInstance();
+                    var existingRegister = appController.getCell(newRegister.getId());
+
+                    newRegister = newRegister.merge(existingRegister);
+
+                    log("Passing the following ID: "+newRegister.getId());
+                    log("For the register: "+newRegister.toJSON());
+                    appController.setCell(newRegister.getId(), newRegister);
+
                     break;
                 case MulticastReplicationProtocol.PayloadTypes.IDENTITY:
 
                     log("Received peer identity: " + payload.toJSON());
 
                     var c = Context.getInstance();
-                    var content = payload.getContent();;
+                    var content = payload.getContent();
                     var ri = ReplicaIdentity.newFromString(content);
 
                     //printing the list of peers
