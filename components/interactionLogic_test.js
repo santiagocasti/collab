@@ -12,17 +12,17 @@ describe('Testing InteractionCtrl', function () {
         });
     }));
 
-    it('should add rows', function () {
+//    it('should add rows', function () {
 
-        expect(scope.messageContent).toBe('content');
+//        expect(scope.messageContent).toBe('content');
 
-        expect(scope.rows.length).toBe(0);
-        scope.addRow();
-        expect(scope.rows.length).toBe(1);
+//        expect(scope.rows.length).toBe(0);
+//        scope.addRow();
+//        expect(scope.rows.length).toBe(1);
 
 
 ////        expect(scope.rows[0].cells[0].value).toBe('a');
-    });
+//    });
 
 
 //    beforeEach(module('collabApp'));

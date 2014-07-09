@@ -14,6 +14,11 @@ app.controller('InteractionCtrl', function ($scope) {
 
     $scope.cellClicked = function (row, col) {
 
+        if (col == 0) {
+            log("Ignoring this column because it's the one that indicates the numbers");
+            return;
+        }
+
         // if we are editing this cell, ignore the click
         if ($scope.rows[row].cells[col].edit === true) {
             log("Ignoring click cause we are editing this cell.");
@@ -162,24 +167,41 @@ app.controller('InteractionCtrl', function ($scope) {
         var shop = ["Edeka", "Lidl", "DM", "Real", "VRN", "Kino", "Theater", "Bahn", "Meinfernbus"];
 
         var i;
+        var cell0, cell1, cell2, cell3, cell4;
         for (i = 0; i < 15; ++i) {
+
+            cell0 = $scope.rows.length + 1;
+            cell1 = names[getRandomInt(0, names.length - 1)];
+            cell2 = category[getRandomInt(0, category.length - 1)];
+            cell3 = shop[getRandomInt(0, shop.length - 1)];
+            cell4 = getRandomInt(0, 150);
+
             $scope.rows[$scope.rows.length] = {
                 'cells': [
-                    {'value': $scope.rows.length + 1, 'row': i, 'col': 0, 'edit': false, 'class': (i==14? "left bottom": 'left')},
-                    {'value': names[getRandomInt(0, names.length - 1)], 'row': i, 'col': 1, 'edit': false, 'class': (i==14? "bottom" : "")},
-                    {'value': category[getRandomInt(0, category.length - 1)], 'row': i, 'col': 2, 'edit': false, 'class': (i==14? "bottom" : "")},
-                    {'value': shop[getRandomInt(0, shop.length - 1)], 'row': i, 'col': 3, 'edit': false, 'class': (i==14? "bottom" : "")},
-                    {'value': getRandomInt(0, 150), 'row': i, 'col': 4, 'edit': false, 'class': (i==14? "bottom" : "")},
-                    {'value': " ", 'row': i, 'col': 5, 'edit': false, 'class': (i==14? "bottom" : "")},
-                    {'value': " ", 'row': i, 'col': 6, 'edit': false, 'class': (i==14? "bottom" : "")},
-                    {'value': " ", 'row': i, 'col': 7, 'edit': false, 'class': (i==14? "bottom" : "")},
-                    {'value': " ", 'row': i, 'col': 8, 'edit': false, 'class': (i==14? "right bottom": 'right')}
+                    {'value': cell0, 'row': i, 'col': 0, 'edit': false},
+                    {'value': " ", 'row': i, 'col': 1, 'edit': false},
+                    {'value': " ", 'row': i, 'col': 2, 'edit': false},
+                    {'value': " ", 'row': i, 'col': 3, 'edit': false},
+                    {'value': " ", 'row': i, 'col': 4, 'edit': false},
+                    {'value': " ", 'row': i, 'col': 5, 'edit': false},
+                    {'value': " ", 'row': i, 'col': 6, 'edit': false},
+                    {'value': " ", 'row': i, 'col': 7, 'edit': false},
+                    {'value': " ", 'row': i, 'col': 8, 'edit': false}
                 ]
             }
         }
 
 
     }
+
+    $scope.getCellClass = function (row, column) {
+        if (column !== 0) {
+            return "tg-031e";
+        } else {
+            return "tg-afp9";
+        }
+    }
+
 
     $scope.handleMessage = function (message) {
         console.log("We are in InteractionLogic handle Message");
@@ -189,16 +211,22 @@ app.controller('InteractionCtrl', function ($scope) {
 
     $scope.updateCell = function (content) {
 
-        var value = "";
-        if (content.value.length === 1){
-            value = content.value[0];
-        }else{
-            content.value.forEach(function (element){
-                value = value + element + " | ";
-            });
-        }
+        var value;
+        content.forEach(function (cell) {
+            value = "";
+            if (cell.value.length === 1) {
+                value = cell.value[0];
+            } else {
+                cell.value.forEach(function (element) {
+                    value = value + element + " | ";
+                });
+            }
 
-        $scope.rows[content.row]['cells'][content.col].value = value;
+            $scope.rows[cell.row]['cells'][cell.col].value = value;
+
+            console.log("Updating cell [" + cell.row + "," + cell.col + "] with value [" + value + "]");
+
+        });
 
         $scope.$apply();
     }
@@ -211,7 +239,7 @@ app.controller('InteractionCtrl', function ($scope) {
         $scope.$apply();
     }
 
-    $scope.saveCellContent = function (row, column, value){
+    $scope.saveCellContent = function (row, column, value) {
         var fem = FrontEndMessaging.getInstance();
         var cell = {};
         cell.row = row;
