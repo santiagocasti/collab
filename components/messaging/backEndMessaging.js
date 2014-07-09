@@ -61,6 +61,12 @@ var BackEndMessaging = (function () {
                         log("NOT Sending direct replication request because we don't have enough peers.");
                     }
                     break;
+                case MessagePassing.MessageTypes.NEW_CELL_VALUE:
+                        debug("Received a message with a new cell value");
+                        var appController = ApplicationController.getInstance();
+                        var content = message.content;
+                        appController.updatedCellValue(content.row, content.col, content.value);
+                    break;
                 default:
                     debug("Received message that should not handle [" + message.type + "]: ", message);
             }
