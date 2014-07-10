@@ -1,3 +1,11 @@
+if (typeof module != 'undefined' && typeof require == 'function') {
+    var VectorClock = require('../crdt/vectorClock.js');
+    var RegisterValue = require('../crdt/registerValue.js');
+    var MVRegister = require('../crdt/multiValueRegister.js');
+    var Counter = require('../crdt/pncounter.js');
+}
+
+
 var CRDT = (function () {
 
     return {
@@ -16,18 +24,22 @@ var CRDT = (function () {
 
             var increment = {};
             if (jsonBag['increment']) {
-                if (typeof jsonBag['increment'] === "string"){
+                if (typeof jsonBag['increment'] === "string") {
                     jsonBag['increment'] = JSON.parse(jsonBag['increment']);
                 }
                 increment = new VectorClock(jsonBag['increment']);
+            } else {
+                increment = new VectorClock({});
             }
 
             var decrement = {};
             if (jsonBag['decrement']) {
-                if (typeof jsonBag['decrement'] === "string"){
+                if (typeof jsonBag['decrement'] === "string") {
                     jsonBag['decrement'] = JSON.parse(jsonBag['decrement']);
                 }
                 decrement = new VectorClock(jsonBag['decrement']);
+            } else {
+                decrement = new VectorClock({});
             }
 
             if (id === 0) {
@@ -47,8 +59,8 @@ var CRDT = (function () {
             }
 
             var data = [];
-            if (typeof jsonBag['data'] != 'undefined'){
-                jsonBag['data'].forEach(function (element){
+            if (typeof jsonBag['data'] != 'undefined') {
+                jsonBag['data'].forEach(function (element) {
                     data[data.length] = CRDT.newRegisterValueFromSimpleObject(element);
                 });
             }
@@ -60,12 +72,29 @@ var CRDT = (function () {
             return new MVRegister(id, data);
         },
 
-        newRegisterValueFromSimpleObject: function (data){
-            if (!data.hasOwnProperty('value') || !data['vectorClock']){
+        newRegisterValueFromSimpleObject: function (data) {
+            if (!data.hasOwnProperty('value') || !data['vectorClock']) {
                 log("A register value cannot be created without a value and a vectorClock!!");
                 return false;
             }
             return new RegisterValue(new VectorClock(data['vectorClock']), data['value']);
+        },
+
+        newFromJSON: function (id, data, crdtType) {
+            switch (crdtType) {
+                case "Counter":
+                    return CRDT.newCounterFromJSON(id, data);
+                    break;
+                case "MVRegister":
+                    return CRDT.newRegisterFromJSON(id, data);
+                    break;
+                default:
+                    return null;
+            }
         }
     }
 })();
+
+if (typeof module != 'undefined') {
+    module.exports = CRDT;
+}
