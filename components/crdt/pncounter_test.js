@@ -102,11 +102,11 @@ describe("CRDTs counters ", function () {
             var parsedJSON = JSON.parse(jsonString);
             var originalC1 = CRDT.newCounterFromJSON(1, parsedJSON);
 
-            c1.merge(c2);
+            c1 = c1.merge(c2);
 
             expect(c1.getCount()).toEqual(n);
 
-            c2.merge(originalC1);
+            c2 = c2.merge(originalC1);
 
             expect(c2.getCount()).toEqual(n);
         }
@@ -130,21 +130,21 @@ describe("CRDTs counters ", function () {
         c1.increment(repId2);
 
         // c1 = 3 and c2 = 2, but c1 has all the repIds and c2 not
-        assertMergeBothWays(c1, c2, 4);
+        assertMergeBothWays(c1, c2, 3);
 
         c1.decrement(repId2);
 
-        assertMergeBothWays(c1, c2, 3);
+        assertMergeBothWays(c1, c2, 2);
 
         c2.increment(repId2);
 
         // c2 = 3 and c1 = 3, but c2 has the counter for one replica bigger than c1
-        assertMergeBothWays(c1, c2, 4);
+        assertMergeBothWays(c1, c2, 3);
 
         c1.increment(repId1);
 
         // c1 = 4 and c2 = 4, but they have different values in shared and not shared repIds
-        assertMergeBothWays(c1, c2, 5);
+        assertMergeBothWays(c1, c2, 4);
 
     });
 
@@ -200,7 +200,7 @@ describe("CRDTs counters ", function () {
         expect(c.tracks(oldId)).toBe(true);
         expect(c2.tracks(newId)).toBe(true);
 
-        c.merge(c2);
+        c = c.merge(c2);
 
         expect(c.tracks(newId)).toBe(true);
         expect(c.tracks(oldId)).toBe(false);
@@ -217,7 +217,7 @@ describe("CRDTs counters ", function () {
         expect(c.tracks(oldId)).toBe(true);
         expect(c2.tracks(newId)).toBe(true);
 
-        c.merge(c2);
+        c = c.merge(c2);
 
         expect(c.tracks(newId)).toBe(true);
         expect(c.tracks(oldId)).toBe(false);

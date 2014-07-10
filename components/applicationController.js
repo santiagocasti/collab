@@ -72,7 +72,7 @@ var ApplicationController = (function () {
                 return;
             }
 
-            onlineUserCounter.merge(counter);
+            onlineUserCounter = onlineUserCounter.merge(counter);
         }
 
         return {

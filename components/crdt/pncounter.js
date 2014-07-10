@@ -1,3 +1,8 @@
+if (typeof module != 'undefined' && typeof require == 'function'){
+    var VectorClock = require('../crdt/vectorClock.js');
+    var ReplicaIdentity = require('../replication/replicaIdentity.js');
+}
+
 function Counter(id, initialIncrementValues, initialDecrementValues) {
 
     this.private = {};
@@ -160,12 +165,13 @@ Counter.prototype.merge = function (otherCounter) {
         return false;
     }
 
-    this.private.incrementClock = this.private.incrementClock.merge(otherCounter.getIncrementClock());
-    this.private.decrementClock = this.private.decrementClock.merge(otherCounter.getDecrementClock());
+    var incClock = this.private.incrementClock.merge(otherCounter.getIncrementClock());
+    var decClock = this.private.decrementClock.merge(otherCounter.getDecrementClock());
 
-    this.private.incrementClock.purge();
-    this.private.decrementClock.purge();
+    incClock.purge();
+    decClock.purge();
 
+    return new Counter(this.private.id, incClock, decClock);
 };
 
 /**
@@ -188,6 +194,8 @@ Counter.prototype.getId = function () {
     return this.private.id;
 };
 
-
+if (typeof module != 'undefined') {
+    module.exports = Counter;
+}
 
 
