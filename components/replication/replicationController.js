@@ -31,23 +31,16 @@ var ReplicationController = (function () {
     function handleDirectReplicationRequest(message, socketId) {
 
         log("Handling a direct replication request.");
-        var c = Context.getInstance();
         var appController = ApplicationController.getInstance();
+
         var counter = appController.getOnlineUsersCounter();
+        var counterId = counter.getId();
+        var counterObj = {};
+        counterObj[counter.getId()] = counter;
 
-        // create the data of the payload
-        var data = {};
-
-        // add the counter
-        data.counters = [];
-        data.counters.push(counter.toJSON());
-
-        // add the registers being tracked
-        data.registers = [];
-        var allRegisters = appController.getAllCells();
-        for (var index in allRegisters){
-            data.registers.push(allRegisters[index].toJSON());
-        }
+        var data = buildDirectReplicationResponsePayload(
+                            counterObj,
+                            appController.getAllCells());
 
         var payload = MessagePayload.new(
                 DirectReplicationProtocol.PayloadTypes.RESPONSE,
@@ -58,6 +51,22 @@ var ReplicationController = (function () {
         var msg = Message.Create(Message.Types.OUT, payload);
 
         n.sendMessageThroughExistingSocket(socketId, msg);
+    }
+
+    function buildDirectReplicationResponsePayload(allCounters, allRegisters){
+        var data = {};
+
+        data.counters = [];
+        for (var index in allCounters){
+            data.counters.push(allCounters[index].toJSON());
+        }
+
+        data.registers = [];
+        for (var index in allRegisters){
+            data.registers.push(allRegisters[index].toJSON());
+        }
+
+        return data;
     }
 
     /**
@@ -188,7 +197,7 @@ var ReplicationController = (function () {
 
                     var newCounter = CRDT.newCounterFromJSON(payload.getObjectId(), JSON.parse(payload.getContent()));
 
-                    newCounter.merge(existingCounter);
+                    newCounter = newCounter.merge(existingCounter);
 
                     appController.setOnlineUsersCounter(newCounter);
 
@@ -303,6 +312,15 @@ var ReplicationController = (function () {
                 default:
                     log("Received a message of a type that cannot be handled type [" + payload.getType() + "].", payload.toJSON());
             }
+        },
+
+        BuildDirectReplicationResponseData: function(allCounters, allRegisters){
+            return buildDirectReplicationResponsePayload(allCounters, allRegisters);
         }
     };
 })();
+
+
+if (typeof module != 'undefined') {
+    module.exports = ReplicationController;
+}
