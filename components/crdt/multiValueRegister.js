@@ -1,3 +1,10 @@
+if (typeof module != 'undefined' && typeof require == 'function'){
+    var VectorClock = require('../crdt/vectorClock.js');
+    var RegisterValue = require('../crdt/registerValue.js');
+    var ReplicaIdentity = require('../replication/replicaIdentity.js');
+}
+
+
 function MVRegister(id, data) {
 
     this.private = {};
@@ -135,6 +142,8 @@ MVRegister.prototype.toJSON = function () {
     return JSON.stringify(bag);
 }
 
-
+if (typeof module != 'undefined') {
+    module.exports = MVRegister;
+}
 
 

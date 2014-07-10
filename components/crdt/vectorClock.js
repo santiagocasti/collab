@@ -1,3 +1,7 @@
+if (typeof module != 'undefined' && typeof require == 'function'){
+    var ReplicaIdentity = require('../replication/replicaIdentity.js');
+}
+
 function VectorClock(data) {
 
     this.private = {};
@@ -203,4 +207,8 @@ VectorClock.prototype.clone = function () {
         data[key] = this.private.vector[key];
     }
     return new VectorClock(data);
+}
+
+if (typeof module != 'undefined') {
+    module.exports = VectorClock;
 }

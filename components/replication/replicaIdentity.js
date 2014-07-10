@@ -56,3 +56,7 @@ var ReplicaIdentity = (function (){
 
 
 })();
+
+if (typeof module != 'undefined') {
+    module.exports = ReplicaIdentity;
+}

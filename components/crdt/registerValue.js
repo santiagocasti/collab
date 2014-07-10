@@ -9,3 +9,7 @@ RegisterValue.prototype.toSimpleObject = function (){
     array.vectorClock = this.vectorClock.getInternalVector();
     return array;
 }
+
+if (typeof module != 'undefined') {
+    module.exports = RegisterValue;
+}

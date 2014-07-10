@@ -31,3 +31,7 @@ var PeerIdentity = (function (){
     }
 
 })();
+
+if (typeof module != 'undefined') {
+    module.exports = PeerIdentity;
+}
