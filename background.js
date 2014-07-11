@@ -5,6 +5,10 @@ chrome.app.runtime.onLaunched.addListener(function (launchData) {
     }, 'maxWidth': 800,
         'maxHeight': 600}, function (win) {
         win.contentWindow.launchData = launchData;
+        win.onClosed.addListener(function () {
+            var appController = ApplicationController.getInstance();
+            appController.appClosed();
+        });
     });
 });
 
