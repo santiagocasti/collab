@@ -39,8 +39,8 @@ var ReplicationController = (function () {
         counterObj[counter.getId()] = counter;
 
         var data = buildDirectReplicationResponsePayload(
-                            counterObj,
-                            appController.getAllCells());
+                counterObj,
+                appController.getAllCells());
 
         var payload = MessagePayload.new(
                 DirectReplicationProtocol.PayloadTypes.RESPONSE,
@@ -53,38 +53,25 @@ var ReplicationController = (function () {
         n.sendMessageThroughExistingSocket(socketId, msg);
     }
 
-    function buildDirectReplicationResponsePayload(allCounters, allRegisters){
+    function buildDirectReplicationResponsePayload(allCounters, allRegisters) {
         var data = {};
 
         data.counters = [];
-        for (var index in allCounters){
+        for (var index in allCounters) {
             data.counters.push(allCounters[index].toJSON());
         }
 
         data.registers = [];
-        for (var index in allRegisters){
+        for (var index in allRegisters) {
             data.registers.push(allRegisters[index].toJSON());
         }
 
         return data;
     }
 
-    /**
-     * Handles DirectReplication response and stores the data where it belongs.
-     * @param msg
-     * @param socketId
-     */
-    function handleDirectReplicationResponse(msg, socketId) {
-        log("Handling a direct replication response.");
+    function importRegistersAndCounters(data){
 
         var appController = ApplicationController.getInstance();
-
-        var payload = msg.getPayload();
-
-        var data = payload.getContent();
-
-//        log("Payload: "+payload.toJSON(), payload);
-//        log("Data: "+data, data);
 
         if (typeof data.counters !== "undefined") {
             data.counters.forEach(function (counter) {
@@ -102,13 +89,86 @@ var ReplicationController = (function () {
             var regObj, cells = [];
             data.registers.forEach(function (register) {
                 regObj = CRDT.newRegisterFromJSON(0, register);
-                if (regObj instanceof MVRegister){
+                if (regObj instanceof MVRegister) {
                     cells.push(regObj);
                 }
             });
 
             appController.setCells(cells);
         }
+    }
+
+    /**
+     * Handles DirectReplication response and stores the data where it belongs.
+     * @param msg
+     * @param socketId
+     */
+    function handleDirectReplicationResponse(msg, socketId) {
+        log("Handling a direct replication response.");
+
+        var payload = msg.getPayload();
+
+        var data = payload.getContent();
+
+//        log("Payload: "+payload.toJSON(), payload);
+//        log("Data: "+data, data);
+
+        importRegistersAndCounters(data);
+    }
+
+    function attemptDirectReplicationToServer(onFailureCallback) {
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://"+ServerConstants.IP+":"+ServerConstants.Port+"/basedata", true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                // JSON.parse does not evaluate the attacker's scripts.
+                log("We got the following: ", xhr.responseText);
+                var data = JSON.parse(xhr.responseText);
+
+                importRegistersAndCounters(data);
+
+
+                var c = Context.getInstance();
+                c.setDirectReplicationFlag(true);
+
+
+            }else{
+                log("Something failed and the request could not be performed"+
+                    " status["+xhr.status+"] readystate["+xhr.readyState+"]");
+                onFailureCallback();
+            }
+        }
+        xhr.send();
+
+    }
+
+    function replicateCrdtToServer(crdt){
+
+        if (!(crdt instanceof Counter) &&
+            !(crdt instanceof MVRegister)){
+            log("crdt provided is not a proper object", crdt);
+            return;
+        }else{
+            var crdtName;
+            if (crdt instanceof Counter){
+                crdtName = 'counter';
+            }else{
+                crdtName = 'register';
+            }
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "http://"+ServerConstants.IP+":"+ServerConstants.Port+"/"+crdtName+"/"+crdt.getId(), true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                log("Replicated "+crdtName+"["+crdt.getId()+"] to the server");
+            }else{
+                log("Something failed and the request to replicate "+crdtName+"["+crdt.getId()+"] "+
+                    "could not be performed  status["+xhr.status+"] readystate["+xhr.readyState+"]");
+            }
+        }
+        xhr.send(crdt.toJSON());
 
     }
 
@@ -144,11 +204,13 @@ var ReplicationController = (function () {
             });
 
             ReplicationController.Replicate(msg, counterReplicated_r6yWxvuw84mr);
+
+            replicateCrdtToServer(counter);
         },
 
         ReplicateRegister: function (register) {
 
-            if (register instanceof MVRegister){
+            if (register instanceof MVRegister) {
                 debug("We received an object of the right type!");
             }
 
@@ -168,6 +230,7 @@ var ReplicationController = (function () {
 
             ReplicationController.Replicate(msg, registerReplicated_4uUcXKJhnbTK);
 
+            replicateCrdtToServer(register);
         },
 
         SharePeerIdentity: function () {
@@ -212,8 +275,8 @@ var ReplicationController = (function () {
 
                     newRegister = newRegister.merge(existingRegister);
 
-                    log("Passing the following ID: "+newRegister.getId());
-                    log("For the register: "+newRegister.toJSON());
+                    log("Passing the following ID: " + newRegister.getId());
+                    log("For the register: " + newRegister.toJSON());
                     appController.setCells([newRegister]);
 
                     break;
@@ -249,17 +312,34 @@ var ReplicationController = (function () {
             var c = Context.getInstance();
             // if we haven't done direct replication yet
             if (c.getDirectReplicationFlag() === false) {
-                log("We haven't done direct replication from a peer, starting it.");
-                var peers = c.getAllPeers();
-                log("Sending direct replication request to peer:", peers[0]);
-                // send a direct replication request to a peer
-                /**
-                 * TODO: should define the way of choosing the peer to query
-                 * because there might be peers that where on the same partition
-                 * as we were and when the two partitions merge it is hard to merge
-                 */
-                ReplicationController.SendDirectReplicationRequest(peers[0]);
-                c.setDirectReplicationFlag(true);
+                log("We haven't done direct replication, starting it.");
+
+                var onFailureCallback = function () {
+                    var peers = c.getAllPeers();
+
+                    if (peers.length > 0) {
+                        log("Sending direct replication request to peer:", peers[0]);
+                        /**
+                         * TODO: should define the way of choosing the peer to query
+                         * because there might be peers that where on the same partition
+                         * as we were and when the two partitions merge it is hard to merge
+                         */
+                        ReplicationController.SendDirectReplicationRequest(peers[0]);
+                        c.setDirectReplicationFlag(true);
+                    } else {
+                        // if there are no peers to whom the application could send a
+                        // direct replication request, then set a callback for when
+                        // a peer appears and repeat the procedure then
+                        var callback_a4GMHVoaATHu = function () {
+                            ReplicationController.StartDirectReplication();
+                        }
+
+                        // when a new peer is added, this callback will be called
+                        c.clearCallbacksForNewPeerEvent();
+                        c.addCallbackForNewPeerEvent(callback_a4GMHVoaATHu);
+                    }
+                };
+                attemptDirectReplicationToServer(onFailureCallback);
             }
         },
 
@@ -314,7 +394,7 @@ var ReplicationController = (function () {
             }
         },
 
-        BuildDirectReplicationResponseData: function(allCounters, allRegisters){
+        BuildDirectReplicationResponseData: function (allCounters, allRegisters) {
             return buildDirectReplicationResponsePayload(allCounters, allRegisters);
         }
     };
