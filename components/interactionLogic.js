@@ -270,12 +270,6 @@ if (chrome.app.window) {
     var currentWindow = chrome.app.window.current();
 
     if (currentWindow) {
-        currentWindow.onClosed.addListener(function () {
-            var msg = MessagePassing.MessageToBack(MessagePassing.MessageTypes.CLOSING_WINDOW, "");
-            var fem = FrontEndMessaging.getInstance();
-            fem.sendMessage(msg);
-        });
-
         // notify the backend that the front end loaded
         var msg = MessagePassing.MessageToBack(MessagePassing.MessageTypes.OPENED_WINDOW, "");
         var fem = FrontEndMessaging.getInstance();
