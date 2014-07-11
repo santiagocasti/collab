@@ -8,6 +8,7 @@ var Counter = require('../crdt/pncounter.js');
 var CRDT = require('../crdt/factory.js');
 var KeyGen = require('./mcKeyGenerator.js');
 var ReplicationController = require('../replication/replicationController.js');
+var ServerConstants = require('../serverSide/serverConstants.js');
 
 /**
  * Checks if the request is one of the PeerReplication protocol
@@ -57,7 +58,7 @@ http.createServer(function (request, response) {
         }
     });
 
-}).listen(8124, "127.0.0.1");
+}).listen(ServerConstants.Port, ServerConstants.IP);
 
 
 /**
@@ -148,12 +149,6 @@ function updateCRDTFromCache(id, data, response, crdtName) {
 
         // merge the new register with the one we got from cache
         newCrdt = existingCrdt.merge(newCrdt);
-
-        if (crdtName == "MVRegister") {
-            newCrdt.setValue("5f43df3ed3.123123", "value-" + new Date().getTime());
-        } else {
-            newCrdt.increment("5f43df3ed3.123123");
-        }
 
         addCrdtToIdSets(id, crdtName);
 
