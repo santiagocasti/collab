@@ -16,6 +16,10 @@ var ReplicaIdentity = (function (){
 
             toString: function(){
                 return id + "." + timestamp.toString();
+            },
+
+            updateTimestamp: function (){
+                timestamp = new Date().getTime();
             }
         }
 
