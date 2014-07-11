@@ -162,6 +162,8 @@ var ApplicationController = (function () {
 
                 var c = Context.getInstance();
                 var ri = c.getReplicaIdentity();
+                ri.updateTimestamp();
+                c.setReplicaIdentity(ri);
 
                 // create a counter and increment it
                 var counter = CRDT.newCounter(1);
@@ -175,13 +177,7 @@ var ApplicationController = (function () {
 
                 ReplicationController.SharePeerIdentity();
 
-                // callback to send a direct replication request
-                var callback_a4GMHVoaATHu = function () {
-                    ReplicationController.StartDirectReplication();
-                }
-
-                // when a new peer is added, this callback will be called
-                c.addCallbackForEvent(Context.Event.NEW_PEER, callback_a4GMHVoaATHu);
+                ReplicationController.StartDirectReplication();
             },
 
             appClosed: function () {
@@ -195,6 +191,8 @@ var ApplicationController = (function () {
 
                 // replicate it
                 ReplicationController.ReplicateCounter(onlineUserCounter);
+
+                c.setDirectReplicationFlag(false);
             }
 
         };
