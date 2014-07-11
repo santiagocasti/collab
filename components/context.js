@@ -14,15 +14,15 @@ var Context = (function () {
         var wasDirectReplicationPerformed = false;
 
 
-        function purgePeersSet(){
+        function purgePeersSet() {
 
             // build a map of id to timestamp
             var idMap = {};
             var pi;
-            for (var id in peers){
+            for (var id in peers) {
 
                 pi = peers[id];
-                if (typeof idMap[pi.getReplicaIdentityString()] == 'undefined'){
+                if (typeof idMap[pi.getReplicaIdentityString()] == 'undefined') {
                     idMap[pi.getId()] = [];
                 }
 
@@ -31,9 +31,9 @@ var Context = (function () {
 
             var finalMap = {};
             var ri;
-            for (var id in idMap){
+            for (var id in idMap) {
 
-                if (idMap[id].length > 0){
+                if (idMap[id].length > 0) {
                     idMap[id].sort();
                     idMap[id].reverse();
                 }
@@ -46,13 +46,12 @@ var Context = (function () {
             peers = finalMap;
 
 
-
         }
 
-        function triggerCallbacksFor(event){
-            if (callbacks[NEW_PEER_EVENT].length > 0){
+        function triggerCallbacksFor(event) {
+            if (callbacks[NEW_PEER_EVENT].length > 0) {
                 var callback;
-                callbacks[NEW_PEER_EVENT].forEach(function(val){
+                callbacks[NEW_PEER_EVENT].forEach(function (val) {
                     val();
                 });
             }
@@ -67,13 +66,13 @@ var Context = (function () {
                 return replicaIdentity;
             },
 
-            setDirectReplicationFlag: function(value){
-                if (value === true || value === false){
+            setDirectReplicationFlag: function (value) {
+                if (value === true || value === false) {
                     wasDirectReplicationPerformed = value;
                 }
             },
 
-            getDirectReplicationFlag: function(){
+            getDirectReplicationFlag: function () {
                 return wasDirectReplicationPerformed;
             },
 
@@ -83,30 +82,34 @@ var Context = (function () {
                 triggerCallbacksFor(NEW_PEER_EVENT);
             },
 
-            addCallbackForEvent: function(event, callback){
+            addCallbackForNewPeerEvent: function (callback) {
                 callbacks[NEW_PEER_EVENT].push(callback);
             },
 
+            clearCallbacksForNewPeerEvent: function () {
+                callbacks[NEW_PEER_EVENT] = [];
+            },
+
             getPeer: function (replicaIdentity) {
-                if (typeof peers[replicaIdentity] !== "undefined"){
+                if (typeof peers[replicaIdentity] !== "undefined") {
                     return peers[replicaIdentity];
                 }
 
                 return false;
             },
 
-            getAllPeers: function(){
+            getAllPeers: function () {
                 var result = [];
-                for (var key in peers){
+                for (var key in peers) {
                     result.push(peers[key]);
                 }
                 return result;
             },
 
-            printPeerList: function (){
-                log("There are "+Object.keys(peers).length+" peers.");
-                for (var key in peers){
-                    log("["+key+"] IP:"+ peers[key].getIpAddress());
+            printPeerList: function () {
+                log("There are " + Object.keys(peers).length + " peers.");
+                for (var key in peers) {
+                    log("[" + key + "] IP:" + peers[key].getIpAddress());
                 }
             }
 
