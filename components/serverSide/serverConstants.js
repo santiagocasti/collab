@@ -1,6 +1,6 @@
 
 var ServerConstants = {
-    IP: "192.168.0.102",
+    IP: "172.30.0.62",
     Port: "8124"
 };
 
