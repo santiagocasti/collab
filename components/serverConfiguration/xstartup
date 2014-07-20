@@ -1,0 +1,5 @@
+#!/bin/sh
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+startxfce4 &
+/opt/google/chrome/google-chrome --load-and-launch-app=/home/ubuntu/collab/
