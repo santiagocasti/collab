@@ -10,6 +10,9 @@ var Context = (function () {
         var peers = {};
         var callbacks = {};
         callbacks[NEW_PEER_EVENT] = [];
+        var runningTest = false;
+        var test;
+        var interval;
 
         var wasDirectReplicationPerformed = false;
 
@@ -96,6 +99,47 @@ var Context = (function () {
                 }
 
                 return false;
+            },
+
+            addRunningTest: function (t) {
+                test = t;
+                runningTest = true;
+            },
+
+            startTestCheck: function () {
+
+                var intervalFunction = function () {
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("GET", "http://" + ServerConstants.IP + ":" + ServerConstants.Port + "/test", true);
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState == 4 && xhr.status == 200) {
+                            var obj = JSON.parse(xhr.responseText);
+                            if (obj.hasOwnProperty("testId")) {
+                                log("Got the following test to run.", obj);
+
+                                var c = Context.getInstance();
+                                c.addRunningTest(obj);
+
+                                if (obj.testId == "MULTICAST") {
+                                    msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.START_TEST, obj);
+                                    BackEndMessaging.sendMessage(msg);
+                                }
+
+                                window.clearInterval(interval);
+
+                            } else {
+                                log("No tests to run");
+                            }
+
+                        }
+                    }
+                    xhr.send();
+
+                };
+
+                interval = setInterval(intervalFunction, 1000);
+
             },
 
             getAllPeers: function () {
