@@ -48,7 +48,7 @@
                     <tbody>
                     <tr data-ng-repeat="row in rows">
                         <td data-ng-click="cellClicked(cell.row, cell.col)" class="{{getCellClass(cell.row, cell.col)}}"
-                            data-ng-repeat="cell in row.cells"
+                            data-ng-repeat="cell in row"
                             id="cell{{cell.row}}-{{cell.col}}">
                             {{cell.value}}
                         </td>
