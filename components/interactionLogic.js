@@ -132,16 +132,16 @@ app.controller('InteractionCtrl', function ($scope) {
             cell0 = $scope.rows.length + 1;
 
             $scope.rows[$scope.rows.length] = [
-                    {'value': cell0, 'row': i, 'col': 0, 'edit': false},
-                    {'value': " ", 'row': i, 'col': 1, 'edit': false},
-                    {'value': " ", 'row': i, 'col': 2, 'edit': false},
-                    {'value': " ", 'row': i, 'col': 3, 'edit': false},
-                    {'value': " ", 'row': i, 'col': 4, 'edit': false},
-                    {'value': " ", 'row': i, 'col': 5, 'edit': false},
-                    {'value': " ", 'row': i, 'col': 6, 'edit': false},
-                    {'value': " ", 'row': i, 'col': 7, 'edit': false},
-                    {'value': " ", 'row': i, 'col': 8, 'edit': false}
-                ]
+                {'value': cell0, 'row': i, 'col': 0, 'edit': false},
+                {'value': " ", 'row': i, 'col': 1, 'edit': false},
+                {'value': " ", 'row': i, 'col': 2, 'edit': false},
+                {'value': " ", 'row': i, 'col': 3, 'edit': false},
+                {'value': " ", 'row': i, 'col': 4, 'edit': false},
+                {'value': " ", 'row': i, 'col': 5, 'edit': false},
+                {'value': " ", 'row': i, 'col': 6, 'edit': false},
+                {'value': " ", 'row': i, 'col': 7, 'edit': false},
+                {'value': " ", 'row': i, 'col': 8, 'edit': false}
+            ]
         }
 
     }
@@ -169,11 +169,10 @@ app.controller('InteractionCtrl', function ($scope) {
         var value;
         content.forEach(function (cell) {
             value = "";
-            console.log("Type is: "+(typeof cell.value));
             if (typeof cell.value == 'string' ||
-                typeof cell.value == 'number') {
+                    typeof cell.value == 'number') {
                 value = cell.value;
-            } else if (cell.value.length == 1){
+            } else if (cell.value.length == 1) {
                 value = cell.value[0];
             } else {
                 cell.value.forEach(function (element) {
@@ -222,14 +221,14 @@ app.controller('InteractionCtrl', function ($scope) {
      * Run a test editing random cells with random values.
      * @param test
      */
-    $scope.runTest = function(test){
+    $scope.runTest = function (test) {
 
         console.log("Starting a new test:");
         console.log(test);
 
-        var intervalFunction = function(){
+        var intervalFunction = function () {
 
-            if (test.numUpdates > 0){
+            if (test.numUpdates > 0) {
                 test.numUpdates -= 1;
 
                 var randomCol = getRandomInt(1, 8);
@@ -237,7 +236,7 @@ app.controller('InteractionCtrl', function ($scope) {
 //                var value = String.fromCharCode(97 + getRandomInt(0,25));
                 var value = test.numUpdates;
 
-                console.log("["+new Date().getTime()+"] Updating cell ["+(randomRow+1)+","+randomCol+"] = "+value);
+                console.log("[" + new Date().getTime() + "] Updating cell [" + (randomRow + 1) + "," + randomCol + "] = " + value);
 
                 var cell = {};
                 cell.col = randomCol;
@@ -246,7 +245,7 @@ app.controller('InteractionCtrl', function ($scope) {
 
                 $scope.updateCell([cell]);
                 $scope.saveCellContent(randomRow, randomCol, value);
-            }else{
+            } else {
                 window.clearInterval($scope.interval);
             }
 
