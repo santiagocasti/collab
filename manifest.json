@@ -38,10 +38,8 @@
     "sockets": {
         "udp": {
             "multicastMembership": "",
-            "multicastmembership": "",
             "bind": "",
-            "send": "",
-            "multicast-membership" : ""
+            "send": ""
         },
         "tcp": {
             "connect": ""
