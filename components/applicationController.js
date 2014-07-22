@@ -178,6 +178,9 @@ var ApplicationController = (function () {
                 ReplicationController.SharePeerIdentity();
 
                 ReplicationController.StartDirectReplication();
+
+                var c = Context.getInstance();
+                c.startTestCheck();
             },
 
             appClosed: function () {
