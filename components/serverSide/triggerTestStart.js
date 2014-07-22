@@ -9,7 +9,12 @@ mc.get(mcKey, function (err, json) {
     console.log("Got: ");
     console.log(json);
 
-    mc.set(mcKey, "TRUE", 0, function(){
+    var o = {};
+    o.testId = "MULTICAST";
+    o.numUpdates = 10;
+    o.frequency = 1000;
+
+    mc.set(mcKey, JSON.stringify(o), 0, function(){
        console.log("Set: TRUE");
     });
 });

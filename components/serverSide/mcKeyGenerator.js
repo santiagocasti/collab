@@ -9,7 +9,13 @@ module.exports = (function () {
 
         getIdSetKey: function (crdtName){
             return crdtName + ":all";
+        },
+
+        getTestKey: function (){
+            return "peersRetrievedTest";
         }
+
+
     }
 
 })();

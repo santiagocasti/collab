@@ -37,6 +37,15 @@ function isDirectReplicationRequest(request) {
             parts[1].toLowerCase() == 'basedata'; // to the resource basedata
 }
 
+
+function isTestRequest(request) {
+    var path = url.parse(request.url).pathname;
+    var parts = path.split("/");
+    return typeof request.method == 'string' &&
+            request.method.toLowerCase() == 'get' && // GET request
+            parts[1].toLowerCase() == 'test'; // to the resource basedata
+}
+
 http.createServer(function (request, response) {
 
     var postData = "";
@@ -44,8 +53,10 @@ http.createServer(function (request, response) {
         postData += chunk;
     });
 
+    console.log("Remote Address: " + request.connection.remoteAddress);
+
     request.on('end', function () {
-        console.log('POSTed: ' + postData);
+//        console.log('POSTed: ' + postData);
 
         if (isPeerReplicationRequest(request)) {
             // handle peer replication request
@@ -53,12 +64,39 @@ http.createServer(function (request, response) {
         } else if (isDirectReplicationRequest(request)) {
             // handle direct replication request
             handleDirectReplicationRequest(response);
+        } else if (isTestRequest(request)) {
+            var remoteAddress = request.connection.remoteAddress;
+            // handle direct replication request
+            handleTestRequest(response, remoteAddress);
         } else {
             finishRequest(response);
         }
     });
 
 }).listen(ServerConstants.Port, ServerConstants.IP);
+
+
+function handleTestRequest(response, remoteAddress) {
+
+    var mc = getMcClient();
+    var mcKey = KeyGen.getTestKey();
+
+//    var o = {};
+//    o.testId = "MULTICAST";
+//    o.numUpdates = 10;
+//    o.frequency = 1000;
+
+    mc.get(mcKey, function (err, json) {
+        if (typeof json == 'string') {
+            console.log("Replying: "+json);
+            finishRequest(response, json);
+        } else {
+            console.log("Replying: {}");
+            finishRequest(response, "{}");
+        }
+    });
+
+}
 
 
 /**
@@ -70,17 +108,17 @@ http.createServer(function (request, response) {
 function handlePeerReplicationRequest(request, response, postData) {
 
     var path = url.parse(request.url).pathname;
-    console.log('a request was received for: ' + path);
+    console.log('Request for: ' + path);
 
     var parts = path.split("/");
 
     switch (parts[1]) {
         case "register":
-            console.log("Received a register request.");
+//            console.log("Received a register request.");
             updateCRDTFromCache(parts[2], postData, response, "MVRegister");
             break;
         case "counter":
-            console.log("Received a counter request.");
+//            console.log("Received a counter request.");
             updateCRDTFromCache(parts[2], postData, response, "Counter");
             break;
         default:
@@ -96,7 +134,7 @@ function handlePeerReplicationRequest(request, response, postData) {
 function finishRequest(response, msg) {
     response.writeHead(200, {'Content-Type': 'text/plain' });
     if (typeof msg == 'undefined') {
-        msg = +new Date().getTime();
+        msg = "" + new Date().getTime();
     }
     response.end(msg);
 }
@@ -121,7 +159,7 @@ function getMcClient() {
  */
 function updateCRDTFromCache(id, data, response, crdtName) {
 
-    console.log("Handling request to CRDT [" + id + "] with the following data: " + data);
+//    console.log("Handling request to CRDT [" + id + "] with the following data: " + data);
 
     // create a register object with the data from the request
     var newCrdt = CRDT.newFromJSON(id, data, crdtName);
@@ -132,7 +170,7 @@ function updateCRDTFromCache(id, data, response, crdtName) {
     // get from memcached the data for that ID
     mc.get(mcKey, function (err, crdtJson) {
 
-        console.log("We got [" + crdtJson + "] for key [" + mcKey + "]");
+//        console.log("We got [" + crdtJson + "] for key [" + mcKey + "]");
 
         var existingCrdt;
 
@@ -144,8 +182,8 @@ function updateCRDTFromCache(id, data, response, crdtName) {
             existingCrdt = CRDT.newFromJSON(id, {}, crdtName);
         }
 
-        console.log(existingCrdt);
-        console.log(newCrdt);
+        console.log("Existing"+existingCrdt.toJSON());
+        console.log("New"+newCrdt.toJSON());
 
         // merge the new register with the one we got from cache
         newCrdt = existingCrdt.merge(newCrdt);
@@ -155,10 +193,10 @@ function updateCRDTFromCache(id, data, response, crdtName) {
         // save the new merged register in memcached
         mc.set(mcKey, newCrdt.toJSON(), 0, function () {
             var msg = "Saved [" + mcKey + "] as [" + newCrdt.toJSON() + "]";
-            console.log(msg);
+//            console.log(msg);
             finishRequest(response, msg);
 
-            printAllIds(crdtName);
+//            printAllIds(crdtName);
         });
     });
 }
@@ -183,7 +221,7 @@ function addCrdtToIdSets(id, crdtName) {
         data[KeyGen.getCrdtKey(id, crdtName)] = id;
 
         mc.set(mcKey, data, 0, function () {
-            console.log("Saved set of all " + crdtName + " IDs: " + JSON.stringify(data));
+//            console.log("Saved set of all " + crdtName + " IDs: " + JSON.stringify(data));
         });
     });
 }
@@ -198,9 +236,9 @@ function printAllIds(crdtName) {
     var mcKey = KeyGen.getIdSetKey(crdtName);
 
     mc.get(mcKey, function (err, data) {
-        console.log("Printing all [" + crdtName + "] keys [" + data + "]...");
+//        console.log("Printing all [" + crdtName + "] keys [" + data + "]...");
         for (var key in data) {
-            console.log(key);
+//            console.log(key);
         }
     });
 
@@ -223,15 +261,15 @@ function handleDirectReplicationRequest(response) {
 
     mc.get([counterMcKey, registerMcKey], function (err, data) {
 
-        console.log("DATA: "+JSON.stringify(data));
+//        console.log("DATA: " + JSON.stringify(data));
 
         if (JSON.stringify(data) === "{}") {
             var responsePayload = ReplicationController.BuildDirectReplicationResponseData({}, {});
             finishRequest(response, JSON.stringify(responsePayload));
         }
 
-        console.log("counter IDs: " + JSON.stringify(data[counterMcKey]));
-        console.log("register IDs: " + JSON.stringify(data[registerMcKey]));
+//        console.log("counter IDs: " + JSON.stringify(data[counterMcKey]));
+//        console.log("register IDs: " + JSON.stringify(data[registerMcKey]));
 
         if (!data[counterMcKey]) {
             data[counterMcKey] = {};
