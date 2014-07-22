@@ -4,6 +4,7 @@ var FrontEndMessaging = (function () {
     var NEW_DATA_EVENT = 1;
     var UPDATED_USER_COUNT = 2;
     var NEW_CELL_VALUE = 3;
+    var START_TEST = 4
 
     function init() {
 
@@ -11,11 +12,13 @@ var FrontEndMessaging = (function () {
         callbacks[NEW_DATA_EVENT] = [];
         callbacks[UPDATED_USER_COUNT] = [];
         callbacks[NEW_CELL_VALUE] = [];
+        callbacks[START_TEST] = [];
 
         function isValidEvent(event) {
             if (event != NEW_DATA_EVENT &&
                 event != UPDATED_USER_COUNT &&
-                event != NEW_CELL_VALUE) {
+                event != NEW_CELL_VALUE &&
+                event != START_TEST) {
                 return false;
             }
 
@@ -52,6 +55,12 @@ var FrontEndMessaging = (function () {
                 case MessagePassing.MessageTypes.NEW_CELL_VALUE:
                     debug("Received a message for setting new cell value.");
                     callbacks[NEW_CELL_VALUE].forEach(function (callback) {
+                        callback(message.content);
+                    });
+                    break;
+                case MessagePassing.MessageTypes.START_TEST:
+                    debug("Received a message for starting a new test");
+                    callbacks[START_TEST].forEach(function (callback) {
                         callback(message.content);
                     });
                     break;
@@ -99,7 +108,8 @@ var FrontEndMessaging = (function () {
         EventType: {
             NEW_DATA: NEW_DATA_EVENT,
             UPDATED_USER_COUNT: UPDATED_USER_COUNT,
-            NEW_CELL_VALUE: NEW_CELL_VALUE
+            NEW_CELL_VALUE: NEW_CELL_VALUE,
+            START_TEST: START_TEST
         },
 
         getInstance: function () {
