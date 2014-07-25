@@ -11,7 +11,7 @@ var Network = (function () {
 
     function init() {
 
-        var multicastSocket;
+        var multicastSockets = [];
         var tcpServerSockets = [];
         var replicationRequestTCPSockets = [];
 
@@ -77,15 +77,14 @@ var Network = (function () {
          * @param port
          * @returns {boolean}
          */
-        function hasMulticastSocket(protocol, port) {
+        function hasMulticastSocket(protocol, ip, port) {
 
-            if (protocol !== UDP_TYPE &&
-                    port !== MulticastReplicationProtocol.Port) {
+            if (protocol !== UDP_TYPE) {
                 log("Multicast socket not created");
                 return false;
-            } else if (typeof multicastSocket !== 'undefined') {
+            } else if (typeof multicastSockets[ip+":"+port] !== 'undefined') {
                 log("Multicast socket was created");
-                log("Typeof multicasSocket ", multicastSocket);
+                log("Typeof multicasSocket ", multicastSockets[ip+":"+port]);
                 return true;
             }
         }
@@ -267,7 +266,7 @@ var Network = (function () {
 
         }
 
-        function createMuticastUDPSocket(resolve, port, onReceive) {
+        function createMuticastUDPSocket(resolve, ip, port, onReceive) {
 
             // Create the Socket
             chrome.sockets.udp.create({}, function (socketInfo) {
@@ -277,9 +276,20 @@ var Network = (function () {
                     return;
                 }
                 var socketId = socketInfo.socketId;
-                var localIp = "0.0.0.0";
 
-                // Set multicast TTL
+                var localIp = "0.0.0.0";
+//                networkInterfaces.forEach(function(ni){
+//                    var regEx = new RegExp('^192\.168\.1\.[0-9]*$');
+//                    if (regEx.test(ni.ip) == true) {
+//                        localIp = ni.ip;
+//                        log("Setting local IP to: "+localIp);
+//                    }
+//                });
+                log("LocalIP: "+localIp);
+
+
+
+//                Set multicast TTL
                 chrome.sockets.udp.setMulticastTimeToLive(socketId, 12, function (result) {
 
                     if (result < 0) {
@@ -287,16 +297,20 @@ var Network = (function () {
                         return;
                     }
 
+                    log("RESULT ON MULTICAST TTL WAS:"+result);
+
                     // Set onReceive callback
                     chrome.sockets.udp.onReceive.addListener(onReceive);
 
-                    // Disable loopback on multicast
+//                    Disable loopback on multicast
                     chrome.sockets.udp.setMulticastLoopbackMode(socketId, false, function (result) {
 
                         if (result < 0) {
                             handleSocketCreationError(result, 3);
                             return;
                         }
+
+                        log("RESULT ON MULTICAST LOOPBACK MODE WAS:"+result);
 
                         // Bind the socket to the desired port
                         chrome.sockets.udp.bind(socketId, localIp, port, function (result) {
@@ -306,24 +320,27 @@ var Network = (function () {
                                 return;
                             }
 
+                            log("RESULT ON MULTICAST BINDING WAS:"+result);
+
 //                            var socket = new Socket(socketId, port, UDP_TYPE);
 //                            sockets[UDP_TYPE].push(socket);
-                            multicastSocket = new Socket(socketId, port, UDP_TYPE);
+                            multicastSockets[(ip+":"+port)] = new Socket(socketId, port, UDP_TYPE);
 
                             // Join the multicast group where replication occurs
-                            chrome.sockets.udp.joinGroup(socketId, MulticastReplicationProtocol.MulticastIP, function (result) {
+                            chrome.sockets.udp.joinGroup(socketId, ip, function (result) {
 
                                 if (result < 0) {
                                     handleSocketCreationError(result, 5);
                                     return;
                                 }
 
+                                log("RESULT ON MULTICAST JOIN GROUP WAS:"+result);
+
                                 resolve(localIp);
 
                                 // Debugging: list the multicast groups joined
                                 chrome.sockets.udp.getJoinedGroups(socketId, function (val) {
-                                    debug("[" + socketId + "] joined groups for ip " + MulticastReplicationProtocol.MulticastIP + " [sockeId:" + socketId + "]");
-                                    debug(val);
+                                    debug("[" + socketId + "]["+localIp+"] joined groups for ip " + val + " [sockeId:" + socketId + "]");
                                 });
 
                             });
@@ -332,30 +349,6 @@ var Network = (function () {
 
                     });
                 });
-            });
-        }
-
-        /**
-         * Send simple UDP message to the given ip:port
-         * @param ip
-         * @param port
-         * @param arrayBuffer
-         */
-        function sendUDPMessage(ip, port, m) {
-
-            var stringMsg = JSON.stringify(m.content);
-            var arrayBuffer = MessageEncoder.str2ab(stringMsg);
-
-            /**
-             * TODO: add code to select the right socket.
-             * For now, everything through the multicast socket.
-             * @type {*}
-             */
-            var socket = multicastSocket;
-
-            chrome.sockets.udp.send(socket.id, arrayBuffer, ip, port, function (sendInfo) {
-                debug("Message [" + msg.msg + "] sent to [" + ip + ":" + port + "] through socket with id [" + socket.id + "]");
-                debug("Send Info is:" + sendInfo.resultCode);
             });
         }
 
@@ -377,7 +370,18 @@ var Network = (function () {
                 cb = callback;
             }
 
-            chrome.sockets.udp.send(multicastSocket.id, arrayBuffer, multicastIp, port, cb);
+            if (typeof multicastSockets[multicastIp+":"+port] == 'undefined'){
+                log("ERROR: cannot send multicast socket because we don't have a socket for that IP-Port combination.");
+                return;
+            }
+
+            var socket = multicastSockets[multicastIp+":"+port];
+
+            chrome.sockets.udp.send(socket.id, arrayBuffer, multicastIp, port, function (data){
+
+                cb();
+
+            });
         }
 
         function releaseSocket(socketId, type){
@@ -411,33 +415,6 @@ var Network = (function () {
             },
 
             /**
-             * Send message to
-             * @param ip
-             * @param port
-             * @param type
-             * @param msg
-             * @returns {boolean}
-             */
-//            sendUDPMessage: function (ip, port, msg) {
-//
-//                var m = new Message(type, msg);
-//
-//                if (UDP_CREATED == false) {
-//                    debug("Trying to send message, but no UDP socket created. Queueing the message.");
-//                    m.ip = ip;
-//                    m.port = port;
-//                    pendingMessages.push(m);
-//                    return false;
-//                }
-//
-//                debug("Sending inline, not delayed.");
-//
-//                sendUDPMessage(ip, port, m);
-//
-//                return true;
-//            },
-
-            /**
              * Send multicast message over UDP
              *
              * @param multicastIp
@@ -447,7 +424,7 @@ var Network = (function () {
              */
             sendMulticastMessage: function (multicastIp, port, messageObj, callback) {
 
-                if (!hasMulticastSocket(UDP_TYPE, port)) {
+                if (!hasMulticastSocket(UDP_TYPE, multicastIp, port)) {
                     debug("Trying to send multicast message, but no multicast UDP socket created. Queueing the message.");
                     messageObj.ip = multicastIp;
                     messageObj.port = port;
@@ -467,11 +444,11 @@ var Network = (function () {
             /**
              * Create a multicast socket over the given protocol, port and
              * call the callback onReceive when new data is available.
-             * @param type
+             * @param ip
              * @param port
              * @param onReceive
              */
-            createMulticastSocket: function (port, onReceive) {
+            createMulticastSocket: function (ip, port, onReceive) {
 
                 debug("Creating UDP Multicast socket on port[" + port + "]");
 
@@ -480,7 +457,7 @@ var Network = (function () {
                     setMulticastUDPCreatedFlag(true);
                 }
 
-                createMuticastUDPSocket(checkUDPSocketCreation, port, onReceive);
+                createMuticastUDPSocket(checkUDPSocketCreation, ip, port, onReceive);
             },
 
 
@@ -519,9 +496,10 @@ var Network = (function () {
                     }
                 };
 
-                networkInterfaces.forEach(function (ni) {
-                    createTCPServerSocket(tcpServerSocketCreated, ni.ip, DirectReplicationProtocol.Port);
-                });
+                var comm = Communication.getInstance();
+                var drProtocol = comm.getPeerRecoveryProtocol();
+
+				createTCPServerSocket(tcpServerSocketCreated, "0.0.0.0", drProtocol.port);
 
             },
 
@@ -552,6 +530,8 @@ var Network = (function () {
                             identityString += "|" + el.address;
                         }
                     });
+
+                    log("Network interfaces:", networkInterfaces);
 
                     log("IdentityString: " + identityString);
 
