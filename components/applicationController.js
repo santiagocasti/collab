@@ -5,156 +5,77 @@ var ApplicationController = (function () {
 
     function init() {
 
-        var onlineUserCounter;
-        var cells = {};
+        var onlineUserCounterId = 1;
+
+        // create a new data store instance
+        var dataStore = DataStore.getInstance();
+
+        // create and assign callback for the online user counter
+        var callback_ToFP4tA9ZdRg = function (counter) {
+            notifyFrontEndAboutOnlineUserCounter(counter.getCount());
+        }
+        dataStore.subscribeToNewCounter(callback_ToFP4tA9ZdRg, onlineUserCounterId);
+
+        // create and assign a callback for new cells
+        var callback_QyRg1nwivb0n = function (cells) {
+            notifyFronEndAboutNewCells(cells);
+        }
+        dataStore.subscribeToNewRegister(callback_QyRg1nwivb0n);
 
         /**
-         * Process data created in the current instance of the application
-         * @param message
+         * Send a message to the front end to update the online user counter
          */
-        function processCreatedData(message) {
-
-            var callback_123987ioslk = function (sendInfo) {
-                debug("Message [" + message + "] replicated");
-                debug("Send Info is:", sendInfo);
-                debug("Notifying frontend");
-                // notify the frontend that the data was replicated correctly
-                msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.REPLICATION_NOTIFICATION, "[" + message + "] replicated");
-                BackEndMessaging.sendMessage(msg);
-            }
-
-            // replicate the new created data
-            var msg = Message.Create(Message.Types.OUT, message);
-            debug("Message created for replication: ", msg);
-
-            ReplicationController.Replicate(msg, callback_123987ioslk);
-
-            // store the data in permanent storage
-            // TODO: add permanent storage
-        }
-
-        /**
-         * Process data received through the replication protocol
-         * @param repMsg
-         * @param rawMsg
-         */
-        function processReceivedData(repMsg, rawMsg) {
-
-            // create the content
-            var content = repMsg.getPayload();
-            content.remoteAddress = rawMsg.remoteAddress;
-            content.remotePort = rawMsg.remotePort;
-            debug("Final payload to be sent:", content);
-
-            // create a message for the message passing interface
-            var msgMsgPassing = MessagePassing.MessageToFront(MessagePassing.MessageTypes.NEW_DATA_AVAILABLE, content);
-            debug("Message for frontend: ", msgMsgPassing);
-
-            // send the new data to the frontend
-            BackEndMessaging.sendMessage(msgMsgPassing);
-
-            // store the data in the permanent storage
-            // TODO: add permanent storage
-        }
-
-        function notifyFrontEndAboutOnlineUserCounter() {
-            log("Sending message to front-end with new online user count: " + onlineUserCounter.getCount());
-            var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.USER_COUNT_UPDATED, onlineUserCounter.getCount());
+        function notifyFrontEndAboutOnlineUserCounter(count) {
+            var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.USER_COUNT_UPDATED, count);
             BackEndMessaging.sendMessage(msg);
         }
 
-        function setCounter(counter) {
-            onlineUserCounter = counter;
-        }
+        /**
+         * Send a message to the front end to update a set of cells
+         */
+        function notifyFronEndAboutNewCells(cells) {
 
-        function mergeOnlineUserCounter(counter) {
-            if (counter.getId() != 1) {
+            var arrayOfCells = [];
+            if (!(cells instanceof Array)){
+                for(var key in cells) {
+                    arrayOfCells.push(cells[key]);
+                }
+            }else{
+                arrayOfCells = cells;
+            }
+
+            if (arrayOfCells.length == 0) {
                 return;
             }
 
-            onlineUserCounter = onlineUserCounter.merge(counter);
+            var cellToSend, res, allNewCells = [];
+            arrayOfCells.forEach(function (cell) {
+
+                // set the cell in the app controller
+                cells[cell.getId()] = cell;
+
+                // split the id
+                res = cell.getId().split('-');
+
+                // create the object to send to the front end
+                cellToSend = {};
+                cellToSend.row = res[0];
+                cellToSend.col = res[1];
+                cellToSend.value = cell.getValue();
+
+                allNewCells.push(cellToSend);
+            });
+
+
+            var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.NEW_CELL_VALUE, allNewCells);
+            BackEndMessaging.sendMessage(msg);
         }
 
         return {
 
-            newDataCreated: function (msg) {
-                processCreatedData(msg);
-            },
-
-            newDataReceived: function (msg, rawMsg) {
-                processReceivedData(msg, rawMsg);
-            },
-
-            setOnlineUsersCounter: function (counter) {
-                setCounter(counter);
-                notifyFrontEndAboutOnlineUserCounter();
-            },
-
-            newCounterReceived: function (counter) {
-                if (counter.getId() == 1) {
-                    mergeOnlineUserCounter(counter);
-                    notifyFrontEndAboutOnlineUserCounter();
-                }
-            },
-
-            updatedCellValue: function (row, column, value) {
+            updateCell: function (row, column, value) {
                 var id = row + "-" + column;
-
-                // if we are not tracking this cell, then create the object
-                if (!cells.hasOwnProperty(id) || !(cells[id] instanceof MVRegister)) {
-                    cells[id] = CRDT.newRegister(id);
-                }
-
-                var c = Context.getInstance();
-
-                cells[id].setValue(c.getReplicaIdentity().toString(), value);
-
-                ReplicationController.ReplicateRegister(cells[id]);
-            },
-
-            getCell: function (id) {
-                if (!cells.hasOwnProperty(id)) {
-                    cells[id] = CRDT.newRegister(id);
-                }
-
-                return cells[id];
-            },
-
-            setCells: function (arrayOfCells) {
-
-                if (arrayOfCells.length == 0){
-                    return;
-                }
-
-                var cellToSend, res, allNewCells = [];
-                arrayOfCells.forEach(function (cell) {
-
-                    // set the cell in the app controller
-                    cells[cell.getId()] = cell;
-
-                    // split the id
-                    res = cell.getId().split('-');
-
-                    // create the object to send to the front end
-                    cellToSend = {};
-                    cellToSend.row = res[0];
-                    cellToSend.col = res[1];
-                    cellToSend.value = cell.getValue();
-
-                    allNewCells.push(cellToSend);
-                });
-
-
-                var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.NEW_CELL_VALUE, allNewCells);
-                BackEndMessaging.sendMessage(msg);
-            },
-
-            getOnlineUsersCounter: function () {
-                return onlineUserCounter;
-            },
-
-            getAllCells: function () {
-                return cells;
+                dataStore.saveCell(id, value);
             },
 
             appStarted: function () {
@@ -165,22 +86,14 @@ var ApplicationController = (function () {
                 ri.updateTimestamp();
                 c.setReplicaIdentity(ri);
 
-                // create a counter and increment it
-                var counter = CRDT.newCounter(1);
-                counter.increment(ri.toString());
+                dataStore.incrementCounter(onlineUserCounterId);
 
-                // set the counter to the app controller
-                setCounter(counter);
-                notifyFrontEndAboutOnlineUserCounter();
+                notifyFrontEndAboutOnlineUserCounter(dataStore.getCounterValue(onlineUserCounterId));
 
-                ReplicationController.ReplicateCounter(onlineUserCounter);
+                ReplicationController.Init();
 
-                ReplicationController.SharePeerIdentity();
-
-                ReplicationController.StartDirectReplication();
-
-                var c = Context.getInstance();
-                c.startTestCheck();
+//                var c = Context.getInstance();
+//                c.startTestCheck();
             },
 
             appClosed: function () {
@@ -188,14 +101,9 @@ var ApplicationController = (function () {
 
                 // decrement the counter of online users
                 var c = Context.getInstance();
-                var ri = c.getReplicaIdentity();
-
-                onlineUserCounter.decrement(ri.toString());
-
-                // replicate it
-                ReplicationController.ReplicateCounter(onlineUserCounter);
-
                 c.setDirectReplicationFlag(false);
+
+                dataStore.decrementCounter(onlineUserCounterId);
             }
 
         };
