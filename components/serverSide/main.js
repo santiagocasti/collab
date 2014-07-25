@@ -53,6 +53,8 @@ http.createServer(function (request, response) {
         postData += chunk;
     });
 
+    var path = url.parse(request.url).pathname;
+    console.log('Request for: ' + path);
     console.log("Remote Address: " + request.connection.remoteAddress);
 
     request.on('end', function () {
@@ -69,6 +71,7 @@ http.createServer(function (request, response) {
             // handle direct replication request
             handleTestRequest(response, remoteAddress);
         } else {
+            console.log("UNRECOGNIZED REQUEST!");
             finishRequest(response);
         }
     });
@@ -88,7 +91,7 @@ function handleTestRequest(response, remoteAddress) {
 
     mc.get(mcKey, function (err, json) {
         if (typeof json == 'string') {
-            console.log("Replying: "+json);
+            console.log("Replying: " + json);
             finishRequest(response, json);
         } else {
             console.log("Replying: {}");
@@ -108,7 +111,7 @@ function handleTestRequest(response, remoteAddress) {
 function handlePeerReplicationRequest(request, response, postData) {
 
     var path = url.parse(request.url).pathname;
-    console.log('Request for: ' + path);
+//    console.log('Request for: ' + path);
 
     var parts = path.split("/");
 
@@ -182,8 +185,8 @@ function updateCRDTFromCache(id, data, response, crdtName) {
             existingCrdt = CRDT.newFromJSON(id, {}, crdtName);
         }
 
-        console.log("Existing"+existingCrdt.toJSON());
-        console.log("New"+newCrdt.toJSON());
+        console.log("Existing" + existingCrdt.toJSON());
+        console.log("New" + newCrdt.toJSON());
 
         // merge the new register with the one we got from cache
         newCrdt = existingCrdt.merge(newCrdt);
@@ -254,19 +257,30 @@ function handleDirectReplicationRequest(response) {
     var counterName = 'Counter';
     var registerName = 'MVRegister';
 
+    console.log("A");
+
     var counterMcKey = KeyGen.getIdSetKey(counterName);
     var registerMcKey = KeyGen.getIdSetKey(registerName);
 
     var mc = getMcClient();
 
+    console.log("B");
+
     mc.get([counterMcKey, registerMcKey], function (err, data) {
+
+        console.log("C");
 
 //        console.log("DATA: " + JSON.stringify(data));
 
         if (JSON.stringify(data) === "{}") {
+            console.log("C.1");
             var responsePayload = ReplicationController.BuildDirectReplicationResponseData({}, {});
             finishRequest(response, JSON.stringify(responsePayload));
+            return;
         }
+
+
+        console.log("D");
 
 //        console.log("counter IDs: " + JSON.stringify(data[counterMcKey]));
 //        console.log("register IDs: " + JSON.stringify(data[registerMcKey]));
@@ -282,21 +296,10 @@ function handleDirectReplicationRequest(response) {
         var counterIDs = Object.keys(data[counterMcKey]);
         var registerIDs = Object.keys(data[registerMcKey]);
 
-        mc.get(counterIDs, function (err, data) {
 
-            if (!data) {
-                data = [];
-            }
+        var callback_wj3h1l2j1ls = function (allJsonCounters) {
 
-            var allJsonCounters = data;
-
-            mc.get(registerIDs, function (err, data) {
-
-                if (!data) {
-                    data = [];
-                }
-
-                var allJsonRegisters = data;
+            var callback_aslkej123lnda = function (allJsonRegisters) {
 
                 var allCounters = [];
                 for (var id in allJsonCounters) {
@@ -312,10 +315,52 @@ function handleDirectReplicationRequest(response) {
 
                 finishRequest(response, JSON.stringify(responsePayload));
 
-            });
-        });
+            }
+
+            getRegisters(registerIDs, callback_aslkej123lnda);
+        }
+
+        getCounters(counterIDs, callback_wj3h1l2j1ls);
+
 
     });
 
+}
+
+
+function getRegisters(registerIDs, callback) {
+
+    if (registerIDs.length > 0) {
+        var mc = getMcClient();
+        mc.get(registerIDs, function (err, data) {
+
+            if (!data) {
+                data = [];
+            }
+
+            callback(data)
+
+        });
+    } else {
+        callback([]);
+    }
+
+}
+
+function getCounters(counterIDs, callback) {
+
+    if (counterIDs.length > 0) {
+        var mc = getMcClient();
+        mc.get(counterIDs, function (err, data) {
+
+            if (!data) {
+                data = [];
+            }
+
+            callback(data);
+        });
+    } else {
+        callback([]);
+    }
 
 }
