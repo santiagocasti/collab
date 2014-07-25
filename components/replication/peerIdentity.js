@@ -1,36 +1,24 @@
-var PeerIdentity = (function (){
+function PeerIdentity(ip, ri) {
+    this.ipAddress = ip;
+    this.replicaIdentity = ri;
+}
 
-    function init(ip, ri){
+PeerIdentity.prototype.getId = function () {
+    return this.replicaIdentity.getId();
+}
 
-        var ipAddress = ip;
-        var replicaIdentity = ri;
+PeerIdentity.prototype.getTimestamp = function () {
+    return this.replicaIdentity.getTimestamp();
+}
 
-        return {
-            getId: function(){
-                return replicaIdentity.getId();
-            },
+PeerIdentity.prototype.getReplicaIdentityString = function () {
+    return this.replicaIdentity.toString();
+}
 
-            getTimestamp: function (){
-                return replicaIdentity.getTimestamp();
-            },
+PeerIdentity.prototype.getIpAddress = function () {
+    return this.ipAddress;
+}
 
-            getReplicaIdentityString: function () {
-                return ri.toString();
-            },
-
-            getIpAddress: function (){
-                return ipAddress;
-            }
-        }
-    }
-
-    return{
-        new: function (ip, ri){
-            return init(ip, ri);
-        }
-    }
-
-})();
 
 if (typeof module != 'undefined') {
     module.exports = PeerIdentity;
