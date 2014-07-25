@@ -10,7 +10,7 @@ describe("Context ", function () {
         var ip = "192.168.1.1";
 
         var ri = ReplicaIdentity.new(id, ts);
-        var pi = PeerIdentity.new(ip, ri);
+        var pi = new PeerIdentity(ip, ri);
 
         c.addPeer(pi);
 
@@ -21,7 +21,7 @@ describe("Context ", function () {
 
         var oldRi = ri.toString();
         ri = ReplicaIdentity.new(id, ts + 1);
-        pi = PeerIdentity.new(ip, ri);
+        pi = new PeerIdentity(ip, ri);
 
 
         c.addPeer(pi);
