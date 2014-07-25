@@ -10,7 +10,6 @@ var MessagePassing = (function () {
     const FRONTEND = "front-end";
     const BACKEND = "back-end";
 
-    const NEW_DATA_CREATED_MESSAGE_TYPE = 1;
     const NEW_DATA_AVAILABLE_MESSAGE_TYPE = 2;
     const REPLICATION_NOTIFICATION_MESSAGE_TYPE = 3;
     const USER_COUNT_UPDATED_MESSAGE_TYPE = 4;
@@ -51,7 +50,6 @@ var MessagePassing = (function () {
         },
 
         MessageTypes: {
-            NEW_DATA_CREATED: NEW_DATA_CREATED_MESSAGE_TYPE,
             NEW_DATA_AVAILABLE: NEW_DATA_AVAILABLE_MESSAGE_TYPE,
             NEW_CELL_VALUE: NEW_CELL_VALUE_MESSAGE_TYPE,
             REPLICATION_NOTIFICATION: REPLICATION_NOTIFICATION_MESSAGE_TYPE,
