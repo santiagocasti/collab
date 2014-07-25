@@ -13,6 +13,13 @@ chrome.app.runtime.onLaunched.addListener(function (launchData) {
 });
 
 var comm = Communication.getInstance();
+
+var serverRepProtocol = new ServerReplicationProtocol();
+comm.setServerReplicationProtocol(serverRepProtocol);
+
+var serverRecoveryProtocol = new ServerRecoveryProtocol();
+comm.setServerRecoveryProtocol(serverRecoveryProtocol);
+
 var n = Network.getInstance();
 
 var promise = new Promise(function (resolve, reject) {
@@ -52,7 +59,7 @@ promise.then(function () {
             /**
              * Direct Replication Protocol
              */
-            var drProtocol = new DirectReplicationProtocol(5679);
+            var drProtocol = new PeerRecoveryProtocol(5679);
             comm.setPeerRecoveryProtocol(drProtocol);
 
             var replicationDirectRequest_EzgZfgrrft44 = (function (data, socket) {
