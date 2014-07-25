@@ -5,9 +5,13 @@ var Communication = (function () {
     function init(){
 
         var peerDiscoveryProtocol;
+
         var peerReplicationProtocol;
-        var serverReplicationProtocol;
         var peerRecoveryProtocol;
+
+        var serverReplicationProtocol;
+        var serverRecoveryProtocol;
+
 
         return {
             getPeerReplicationProtocol: function (){
@@ -40,7 +44,16 @@ var Communication = (function () {
 
             setPeerDiscoveryProtocol: function (protocol){
                 peerDiscoveryProtocol = protocol;
+            },
+
+            getServerRecoveryProtocol: function (){
+                return serverRecoveryProtocol;
+            },
+
+            setServerRecoveryProtocol: function (protocol){
+                serverRecoveryProtocol = protocol;
             }
+
         }
     }
 
