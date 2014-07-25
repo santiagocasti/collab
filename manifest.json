@@ -9,11 +9,16 @@
         "background": {
             "scripts": [
                 "components/util/hashing.js",
+                "components/util/random.js",
                 "components/replication/replicaIdentity.js",
                 "components/replication/peerIdentity.js",
+                "components/storage/dataStore.js",
                 "components/util/loggingUtils.js",
+                "components/net/communication.js",
+                "components/net/communicationProtocol.js",
+                "components/net/causalBroadcastProtocol.js",
+                "components/net/peerDiscoveryProtocol.js",
                 "components/net/directReplicationProtocol.js",
-                "components/net/multicastReplicationProtocol.js",
                 "components/net/message.js",
                 "components/net/messagePayload.js",
                 "components/net/messageEncoder.js",
