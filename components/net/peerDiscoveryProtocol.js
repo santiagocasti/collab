@@ -1,10 +1,16 @@
 if (typeof module != 'undefined' && typeof require == 'function') {
     var CommunicationProtocol = require('./communicationProtocol.js');
     var Message = require('./message.js');
-    var ReplicationController = require('../crdt/replicationController.js');
-    var ReplicaIdentity = require('../replication/replicaIdentity.js');
+    var ReplicaIdentity = require('../crdt/replicaIdentity.js');
+    var PeerIdentity = require('../replication/peerIdentity.js');
+    var Context = require('../../context.js');
 }
 
+/**
+ * Peer Discovery Protocol Prototype
+ * @param port
+ * @constructor
+ */
 function PeerDiscoveryProtocol(port) {
     CommunicationProtocol.call(this, port);
 
@@ -13,7 +19,7 @@ function PeerDiscoveryProtocol(port) {
 
     this.payloadTypes = {
         IDENTITY: IDENTITY_PAYLOAD
-    }
+    };
 
     this.ip = MULTICAST_IP;
 
@@ -27,9 +33,8 @@ PeerDiscoveryProtocol.prototype = Object.create(CommunicationProtocol.prototype,
 /**
  * Handle a new incoming message.
  * @param rawMsg
- * @param socketId
  */
-PeerDiscoveryProtocol.prototype.handleMessage = function (rawMsg, socketId) {
+PeerDiscoveryProtocol.prototype.handleMessage = function (rawMsg) {
 
     // Create a generic raw message object
     var repMsg = Message.CreateFromRawData(Message.Types.IN, rawMsg.data);
@@ -59,8 +64,12 @@ PeerDiscoveryProtocol.prototype.handleMessage = function (rawMsg, socketId) {
         log("Not returning peer identity because we are tracking [" + ri.toString() + "]");
     }
 
-}
+};
 
+/**
+ * Share the identity provided with the peers in the same multicast group.
+ * @param ri
+ */
 PeerDiscoveryProtocol.prototype.shareIdentity = function (ri) {
 
     if (typeof ri == 'undefined') {
@@ -84,8 +93,8 @@ PeerDiscoveryProtocol.prototype.shareIdentity = function (ri) {
 
     var n = Network.getInstance();
     n.sendMulticastMessage(this.ip, this.port, msg, identityShared_VNDW8mEr1SXu);
-}
+};
 
 if (typeof module != 'undefined') {
-    module.exports = CausalBroadcastProtocol;
+    module.exports = PeerDiscoveryProtocol;
 }
