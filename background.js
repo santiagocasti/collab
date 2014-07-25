@@ -12,6 +12,7 @@ chrome.app.runtime.onLaunched.addListener(function (launchData) {
     });
 });
 
+var comm = Communication.getInstance();
 var n = Network.getInstance();
 
 var promise = new Promise(function (resolve, reject) {
@@ -20,26 +21,42 @@ var promise = new Promise(function (resolve, reject) {
 
 promise.then(function () {
 
+
     /**
-     * This callback is used when new data is received on the multicast replication socket.
-     * @param data
+     * Causal Broadcast Protocol
      */
+    var cbProtocol = new CausalBroadcastProtocol(5677);
+    comm.setPeerReplicationProtocol(cbProtocol);
+
     var replicationDataReceived_DxmWj16N13ZH = (function (data) {
-        ReplicationController.HandleMulticastReplicationMessage(data);
+        cbProtocol.handleMessage(data);
     });
 
-    debug("Starting the multicast socket creation part....");
-    n.createMulticastSocket(MulticastReplicationProtocol.Port, replicationDataReceived_DxmWj16N13ZH);
+    debug("Starting the multicast socket creation part on port ["+cbProtocol.port+"]....");
+    n.createMulticastSocket(cbProtocol.ip, cbProtocol.port, replicationDataReceived_DxmWj16N13ZH);
+
+    /**
+     * Peer Discovery Protocol
+     */
+    var pdProtocol = new PeerDiscoveryProtocol(5678);
+    comm.setPeerDiscoveryProtocol(pdProtocol);
+
+    var replicationDataReceived_SxqdH6LZHLEb = (function (data) {
+        pdProtocol.handleMessage(data);
+    });
+
+    debug("Starting the multicast socket creation part on port ["+pdProtocol.port+"]....");
+    n.createMulticastSocket(pdProtocol.ip, pdProtocol.port, replicationDataReceived_SxqdH6LZHLEb);
 
 }).then(function () {
             /**
-             * This callback is used when new data is received on any TCP socket.
-             * Only the direct replication protocol works over TCP, the other protocol
-             * works over UDP.
-             * @type {Function}
+             * Direct Replication Protocol
              */
+            var drProtocol = new DirectReplicationProtocol(5679);
+            comm.setPeerRecoveryProtocol(drProtocol);
+
             var replicationDirectRequest_EzgZfgrrft44 = (function (data, socket) {
-                ReplicationController.HandleDirectReplicationMessage(data, socket);
+                drProtocol.handleMessage(data, socket);
             })
 
             debug("Starting the TCP socket creation part");
