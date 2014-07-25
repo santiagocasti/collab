@@ -1,3 +1,12 @@
+if (typeof module != 'undefined' && typeof require == 'function') {
+    var ApplicationController = require('../applicationController.js');
+    var Message = require('../net/message.js');
+    var CRDT = require('../crdt/factory.js');
+    var Counter = require('../crdt/pncounter.js');
+    var MVRegister = require('../crdt/multiValueRegister.js');
+    var ServerConstants = require('../serverSide/serverConstants.js');
+}
+
 var ReplicationController = (function () {
 
 
@@ -10,100 +19,13 @@ var ReplicationController = (function () {
         }
 
         data.registers = [];
-        for (var index in allRegisters) {
+        for (index in allRegisters) {
             data.registers.push(allRegisters[index].toJSON());
         }
 
         return data;
     }
 
-    function importRegistersAndCounters(data) {
-
-        var dataStore = DataStore.getInstance();
-
-        if (typeof data.counters !== "undefined") {
-            var receivedCounters = [];
-
-            data.counters.forEach(function (counter) {
-//                log("Iterating over counters: "+counter, counter);
-                var c = CRDT.newCounterFromJSON(0, counter);
-                if (c instanceof Counter) {
-//                    log("Received a new user counter that should be handled. Total count: "+c.getCount());
-                    // merge this counter with our online user counter
-                    receivedCounters.push(c);
-                }
-            });
-
-            dataStore.saveCounters(receivedCounters);
-        }
-
-        if (typeof data.registers !== 'undefined') {
-            var regObj, receivedCells = [];
-            data.registers.forEach(function (register) {
-                regObj = CRDT.newRegisterFromJSON(0, register);
-                if (regObj instanceof MVRegister) {
-                    receivedCells.push(regObj);
-                }
-            });
-
-            dataStore.saveRegisters(receivedCells);
-        }
-    }
-
-    function attemptDirectReplicationToServer(onFailureCallback) {
-
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", "http://" + ServerConstants.IP + ":" + ServerConstants.Port + "/basedata", true);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                // JSON.parse does not evaluate the attacker's scripts.
-                log("We got the following: ", xhr.responseText);
-                var data = JSON.parse(xhr.responseText);
-
-                importRegistersAndCounters(data);
-
-
-                var c = Context.getInstance();
-                c.setDirectReplicationFlag(true);
-
-
-            } else {
-                log("Something failed and the request could not be performed" +
-                        " status[" + xhr.status + "] readystate[" + xhr.readyState + "]");
-                onFailureCallback();
-            }
-        }
-        xhr.send();
-
-    }
-
-    function replicateCrdtToServer(crdt) {
-
-        if (!(crdt instanceof Counter) && !(crdt instanceof MVRegister)) {
-            log("crdt provided is not a proper object", crdt);
-            return;
-        } else {
-            var crdtName;
-            if (crdt instanceof Counter) {
-                crdtName = 'counter';
-            } else {
-                crdtName = 'register';
-            }
-        }
-
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "http://" + ServerConstants.IP + ":" + ServerConstants.Port + "/" + crdtName + "/" + crdt.getId(), true);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                log("Replicated " + crdtName + "[" + crdt.getId() + "] to the server");
-            } else {
-                log("Something failed and the request to replicate " + crdtName + "[" + crdt.getId() + "] " +
-                        "could not be performed  status[" + xhr.status + "] readystate[" + xhr.readyState + "]");
-            }
-        }
-        xhr.send(crdt.toJSON());
-
-    }
 
     return {
 
@@ -145,15 +67,10 @@ var ReplicationController = (function () {
             var com = Communication.getInstance();
 
             var peerRepProtocol = com.getPeerReplicationProtocol();
-//            log("peerRepProtocol:", peerRepProtocol);
             peerRepProtocol.replicate(crdt);
 
-            // TODO: implement this protocol
-//            var serverRepProtocol = com.getServerReplicationProtocol();
-////            log("serverRepProtocol:", serverRepProtocol);
-//            serverRepProtocol.replicate(crdt);
-
-//            replicateCrdtToServer(counter);
+            var serverRepProtocol = com.getServerReplicationProtocol();
+            serverRepProtocol.request(crdt);
         },
 
         SharePeerIdentity: function () {
@@ -184,7 +101,7 @@ var ReplicationController = (function () {
                         // a peer appears and repeat the procedure then
                         var callback_a4GMHVoaATHu = function () {
                             ReplicationController.StartRecoveryReplication();
-                        }
+                        };
 
                         // when a new peer is added, this callback will be called
                         c.clearCallbacksForNewPeerEvent();
@@ -192,7 +109,8 @@ var ReplicationController = (function () {
                     }
                 };
 
-                attemptDirectReplicationToServer(onFailureCallback);
+                var servRecoveryProtocol = comm.getServerRecoveryProtocol();
+                servRecoveryProtocol.request(onFailureCallback);
             }
         },
 
