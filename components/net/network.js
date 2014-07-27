@@ -30,15 +30,6 @@ var Network = (function () {
         var networkInterfaces = [];
 
         /**
-         * DEAD CODE
-         * @param resolve
-         * @param port
-         */
-        function createMulticastTCPSocket(resolve, port) {
-            log("Hitting DEAD CODE!");
-        }
-
-        /**
          * Helper function to get the network interface object
          * for a given an IP assigned to the current host.
          * @param ip
@@ -82,9 +73,9 @@ var Network = (function () {
             if (protocol !== UDP_TYPE) {
                 log("Multicast socket not created");
                 return false;
-            } else if (typeof multicastSockets[ip+":"+port] !== 'undefined') {
+            } else if (typeof multicastSockets[ip + ":" + port] !== 'undefined') {
                 log("Multicast socket was created");
-                log("Typeof multicasSocket ", multicastSockets[ip+":"+port]);
+                log("Typeof multicasSocket ", multicastSockets[ip + ":" + port]);
                 return true;
             }
         }
@@ -165,16 +156,16 @@ var Network = (function () {
          * @param socketId
          * @param messageObj
          */
-        function sendMessageThroughExistingSocket(socketId, messageObj){
+        function sendMessageThroughExistingSocket(socketId, messageObj) {
 
             var arrayBuffer = messageObj.getPreparedContent();
 
-            chrome.sockets.tcp.send(socketId, arrayBuffer, function(sendInfo){
+            chrome.sockets.tcp.send(socketId, arrayBuffer, function (sendInfo) {
                 var msgPayload = messageObj.getPayload();
-                log("Sent message through socketId["+socketId+"]: "+msgPayload.toJSON());
+                log("Sent message through socketId[" + socketId + "]: " + msgPayload.toJSON());
 
-                chrome.sockets.tcp.close(socketId, function (){
-                    log("Socket with ID ["+socketId+"] closed successfully");
+                chrome.sockets.tcp.close(socketId, function () {
+                    log("Socket with ID [" + socketId + "] closed successfully");
                 });
             });
 
@@ -201,30 +192,30 @@ var Network = (function () {
 //                        return;
 //                    }
 
-                    chrome.sockets.tcp.setPaused(socketId, false, function (result) {
+                chrome.sockets.tcp.setPaused(socketId, false, function (result) {
+
+                    if (result < 0) {
+                        handleSocketCreationError(result, 7, socketInfo);
+                        return;
+                    }
+
+                    chrome.sockets.tcp.connect(socketId, peerIp, peerPort, function () {
 
                         if (result < 0) {
-                            handleSocketCreationError(result, 7, socketInfo);
+                            handleSocketCreationError(result, 8, socketInfo);
                             return;
                         }
 
-                        chrome.sockets.tcp.connect(socketId, peerIp, peerPort, function () {
+                        var arrayBuffer = messageObj.getPreparedContent();
 
-                            if (result < 0) {
-                                handleSocketCreationError(result, 8, socketInfo);
-                                return;
-                            }
-
-                            var arrayBuffer = messageObj.getPreparedContent();
-
-                            chrome.sockets.tcp.send(socketId, arrayBuffer, function (sendInfo) {
-                                debug("Message sent through TCP socket["+socketId+"] : " + messageObj.getPayload().toJSON());
-                            });
-
+                        chrome.sockets.tcp.send(socketId, arrayBuffer, function (sendInfo) {
+                            debug("Message sent through TCP socket[" + socketId + "] : " + messageObj.getPayload().toJSON());
                         });
 
-
                     });
+
+
+                });
 //
 //
 //                });
@@ -262,9 +253,66 @@ var Network = (function () {
 
                 });
             });
+        }
 
+        /**
+         *
+         * @param resolve
+         * @param ip
+         * @param port
+         */
+        function createUDPSocket(resolve, ip, port) {
+
+            debug("Creating UDP Socket on [" + ip + ":" + port + "] ");
+
+            chrome.sockets.udp.create({}, function (socketInfo) {
+
+                var socketId = socketInfo.socketId;
+
+                if (socketId < 0) {
+                    handleSocketCreationError(socketId, 1, socketInfo);
+                    return;
+                }
+
+                debug("Calling bind with: socketId[" + socketId + "] ip[" + ip + "] port[" + port + "]")
+
+
+                chrome.sockets.udp.bind(socketId, ip, port, function (result) {
+
+                    if (result < 0) {
+                        handleSocketCreationError(result, 4, socketInfo);
+                        return;
+                    }
+
+                    debug("UDP socket listening on " + ip + ":" + port + "...");
+
+                    resolve(socketId);
+
+                });
+            });
+        }
+
+        /**
+         * Send simple UDP message to the given ip:port
+         * @param socketId
+         * @param ip
+         * @param port
+         * @param m
+         */
+        function sendUDPMessage(socketId, ip, port, m, callbackFunction) {
+
+            var arrayBuffer = m.getPreparedContent();
+
+            chrome.sockets.udp.send(socketId, arrayBuffer, ip, port, function (sendInfo) {
+                var msgPayload = m.getPayload();
+                debug("Sent message through socketId[" + socketId + "]: " + msgPayload.toJSON(), sendInfo);
+                if (typeof callbackFunction != 'undefined'){
+                    callbackFunction();
+                }
+            });
 
         }
+
 
         function createMuticastUDPSocket(resolve, ip, port, onReceive) {
 
@@ -285,8 +333,7 @@ var Network = (function () {
 //                        log("Setting local IP to: "+localIp);
 //                    }
 //                });
-                log("LocalIP: "+localIp);
-
+                log("LocalIP: " + localIp);
 
 
 //                Set multicast TTL
@@ -297,7 +344,7 @@ var Network = (function () {
                         return;
                     }
 
-                    log("RESULT ON MULTICAST TTL WAS:"+result);
+                    log("RESULT ON MULTICAST TTL WAS:" + result);
 
                     // Set onReceive callback
                     chrome.sockets.udp.onReceive.addListener(onReceive);
@@ -310,7 +357,7 @@ var Network = (function () {
                             return;
                         }
 
-                        log("RESULT ON MULTICAST LOOPBACK MODE WAS:"+result);
+                        log("RESULT ON MULTICAST LOOPBACK MODE WAS:" + result);
 
                         // Bind the socket to the desired port
                         chrome.sockets.udp.bind(socketId, localIp, port, function (result) {
@@ -320,11 +367,11 @@ var Network = (function () {
                                 return;
                             }
 
-                            log("RESULT ON MULTICAST BINDING WAS:"+result);
+                            log("RESULT ON MULTICAST BINDING WAS:" + result);
 
 //                            var socket = new Socket(socketId, port, UDP_TYPE);
 //                            sockets[UDP_TYPE].push(socket);
-                            multicastSockets[(ip+":"+port)] = new Socket(socketId, port, UDP_TYPE);
+                            multicastSockets[(ip + ":" + port)] = new Socket(socketId, port, UDP_TYPE);
 
                             // Join the multicast group where replication occurs
                             chrome.sockets.udp.joinGroup(socketId, ip, function (result) {
@@ -334,13 +381,13 @@ var Network = (function () {
                                     return;
                                 }
 
-                                log("RESULT ON MULTICAST JOIN GROUP WAS:"+result);
+                                log("RESULT ON MULTICAST JOIN GROUP WAS:" + result);
 
                                 resolve(localIp);
 
                                 // Debugging: list the multicast groups joined
                                 chrome.sockets.udp.getJoinedGroups(socketId, function (val) {
-                                    debug("[" + socketId + "]["+localIp+"] joined groups for ip " + val + " [sockeId:" + socketId + "]");
+                                    debug("[" + socketId + "][" + localIp + "] joined groups for ip " + val + " [sockeId:" + socketId + "]");
                                 });
 
                             });
@@ -370,37 +417,37 @@ var Network = (function () {
                 cb = callback;
             }
 
-            if (typeof multicastSockets[multicastIp+":"+port] == 'undefined'){
+            if (typeof multicastSockets[multicastIp + ":" + port] == 'undefined') {
                 log("ERROR: cannot send multicast socket because we don't have a socket for that IP-Port combination.");
                 return;
             }
 
-            var socket = multicastSockets[multicastIp+":"+port];
+            var socket = multicastSockets[multicastIp + ":" + port];
 
-            chrome.sockets.udp.send(socket.id, arrayBuffer, multicastIp, port, function (data){
+            chrome.sockets.udp.send(socket.id, arrayBuffer, multicastIp, port, function (data) {
 
                 cb();
 
             });
         }
 
-        function releaseSocket(socketId, type){
+        function releaseSocket(socketId, type) {
 
-            switch(type){
+            switch (type) {
                 case TCP_TYPE:
-                        chrome.sockets.tcp.disconnect(socketId, function (){
-                           chrome.sockets.tcp.close(socketId, function(){
-                               log("TCP Socket with ID "+socketId+" closed correctly.");
-                           })
-                        });
+                    chrome.sockets.tcp.disconnect(socketId, function () {
+                        chrome.sockets.tcp.close(socketId, function () {
+                            log("TCP Socket with ID " + socketId + " closed correctly.");
+                        })
+                    });
                     break;
                 case UDP_TYPE:
-                        chrome.sockets.udp.close(socketId, function (){
-                                log("UDP Socket with ID "+socketId+" closed correctly.");
-                        });
+                    chrome.sockets.udp.close(socketId, function () {
+                        log("UDP Socket with ID " + socketId + " closed correctly.");
+                    });
                     break;
                 default:
-                    log("Don't know how to close socket ["+socketId+"] of type ["+type+"]");
+                    log("Don't know how to close socket [" + socketId + "] of type [" + type + "]");
             }
         }
 
@@ -412,6 +459,18 @@ var Network = (function () {
 
             getNetworkInterfaces: function () {
                 return networkInterfaces;
+            },
+
+            getVPNIp: function () {
+                var ip;
+                networkInterfaces.forEach(function (el) {
+                    var regEx = new RegExp('^192\.168\.0\.[0-9]*$');
+                    if (regEx.test(el.ip) == true) {
+
+                        ip = el.ip;
+                    }
+                });
+                return ip;
             },
 
             /**
@@ -461,6 +520,23 @@ var Network = (function () {
             },
 
 
+            /**
+             *
+             * @param socketId
+             * @param ip
+             * @param port
+             * @param msg
+             * @param callback
+             * @returns {boolean}
+             */
+            sendUDPMessage: function (socketId, ip, port, msg, callback) {
+
+                sendUDPMessage(socketId, ip, port, msg, callback);
+
+                return true;
+            },
+
+
 //            createSocket: function (type, port, onReceive) {
 //                debug("Creating socket with type[" + type + "] and port[" + port + "]");
 //
@@ -484,7 +560,7 @@ var Network = (function () {
 
                 chrome.sockets.tcpServer.onAccept.addListener(onAccept);
 
-                var onReceive_tpZ9u193HAY9 = function (data){
+                var onReceive_tpZ9u193HAY9 = function (data) {
                     onReceive(data.data, data.socketId);
                 };
 
@@ -499,16 +575,27 @@ var Network = (function () {
                 var comm = Communication.getInstance();
                 var drProtocol = comm.getPeerRecoveryProtocol();
 
-				createTCPServerSocket(tcpServerSocketCreated, "0.0.0.0", drProtocol.port);
+                createTCPServerSocket(tcpServerSocketCreated, "0.0.0.0", drProtocol.port);
 
             },
 
+            createUDPSocket: function (ip, port, onReceive, onCreation) {
+
+                var onCreated_Ht1shwRi6RfP = function (socketId) {
+                    log("UDP Socket created successfully [" + ip + ":" + port + "]");
+                    onCreation(socketId);
+                };
+
+                chrome.sockets.udp.onReceive.addListener(onReceive);
+
+                createUDPSocket(onCreated_Ht1shwRi6RfP, ip, port);
+            },
 
             sendMessageThroughNewSocket: function (peerIp, peerPort, msg) {
                 sendMessageThroughNewSocket(peerIp, peerPort, msg);
             },
 
-            sendMessageThroughExistingSocket: function (socketId, msg){
+            sendMessageThroughExistingSocket: function (socketId, msg) {
                 sendMessageThroughExistingSocket(socketId, msg);
             },
 
@@ -546,7 +633,7 @@ var Network = (function () {
                 });
             },
 
-            releaseSocket: function (socketId, type){
+            releaseSocket: function (socketId, type) {
                 releaseSocket(socketId, type);
             }
 
