@@ -29,37 +29,66 @@ var promise = new Promise(function (resolve, reject) {
 promise.then(function () {
 
 
-//    /**
-//     * Causal Broadcast Protocol
-//     */
-//    var cbProtocol = new CausalBroadcastProtocol(5677);
-//    comm.setPeerReplicationProtocol(cbProtocol);
-//
-//    var replicationDataReceived_DxmWj16N13ZH = (function (data) {
-//        cbProtocol.handleMessage(data);
-//    });
-//
-//    debug("Starting the multicast socket creation part on port ["+cbProtocol.port+"]....");
-//    n.createMulticastSocket(cbProtocol.ip, cbProtocol.port, replicationDataReceived_DxmWj16N13ZH);
+    var CausalBroadcast = 1;
+    var NewsCast = 2;
+    var TreeOverlay = 3;
 
+    var peerReplicationProtocol = TreeOverlay;
 
-    /**
-     * Causal Broadcast Protocol
-     */
-    var cbProtocol = new NewsCastPeerReplicationProtocol(5677);
-    comm.setPeerReplicationProtocol(cbProtocol);
+    switch (peerReplicationProtocol) {
+        case CausalBroadcast:
+            /**
+             * Causal Broadcast Protocol
+             */
+            var cbProtocol = new CausalBroadcastProtocol(5677);
+            comm.setPeerReplicationProtocol(cbProtocol);
 
-    var replicationDataReceived_DxmWj16N13ZH = (function (data, socketId) {
-        cbProtocol.handleMessage(data, socketId);
-    });
+            var replicationDataReceived_DxmWj16N13ZH = (function (data) {
+                cbProtocol.handleMessage(data);
+            });
 
-    var socketCreated_Y2ZQPh5hE8Et = function (socketId){
-        cbProtocol.setSocketId(socketId);
-    };
+            debug("Starting the multicast socket creation part on port [" + cbProtocol.port + "]....");
+            n.createMulticastSocket(cbProtocol.ip, cbProtocol.port, replicationDataReceived_DxmWj16N13ZH);
+            break;
+        case NewsCast:
+            /**
+             * NewsCast Protocol
+             */
+            var cbProtocol = new NewsCastPeerReplicationProtocol(5677);
+            comm.setPeerReplicationProtocol(cbProtocol);
 
-    debug("Starting the multicast socket creation part on port [" + cbProtocol.port + "]....");
-    n.createUDPSocket(cbProtocol.socketIp, cbProtocol.port, replicationDataReceived_DxmWj16N13ZH, socketCreated_Y2ZQPh5hE8Et);
+            var replicationDataReceived_DxmWj16N13ZH = (function (data, socketId) {
+                cbProtocol.handleMessage(data, socketId);
+            });
 
+            var socketCreated_Y2ZQPh5hE8Et = function (socketId) {
+                cbProtocol.setSocketId(socketId);
+            };
+
+            debug("Starting the multicast socket creation part on port [" + cbProtocol.port + "]....");
+            n.createUDPSocket(cbProtocol.socketIp, cbProtocol.port, replicationDataReceived_DxmWj16N13ZH, socketCreated_Y2ZQPh5hE8Et);
+            break;
+        case TreeOverlay:
+            /**
+             * Tree Overlay Protocol
+             */
+            var cbProtocol = new TreeOverlayPeerReplicationProtocol(5677);
+            comm.setPeerReplicationProtocol(cbProtocol);
+
+            var replicationDataReceived_DxmWj16N13ZH = (function (data) {
+                cbProtocol.handleMessage(data);
+            });
+
+            var socketCreated_Y2ZQPh5hE8Et = function (socketId) {
+                cbProtocol.setSocketId(socketId);
+            };
+
+            debug("Starting the multicast socket creation part on port [" + cbProtocol.port + "]....");
+            n.createUDPSocket(cbProtocol.socketIp, cbProtocol.port, replicationDataReceived_DxmWj16N13ZH, socketCreated_Y2ZQPh5hE8Et);
+            break;
+        default:
+            log("ERROR: No peer replication protocol selected.");
+    }
 
     /**
      * Peer Discovery Protocol
