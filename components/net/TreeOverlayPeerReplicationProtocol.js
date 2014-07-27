@@ -100,11 +100,16 @@ TreeOverlayPeerReplicationProtocol.prototype.sendMessage = function (senderIp, o
         type = this.payloadTypes.REGISTER;
     }
 
+    var n = Network.getInstance();
+    var hash = createUniqueHash(n.getVPNIp());
+    log_created(hash);
+
     var payload = TreeOverlayMessagePayload.new(
             type,
             o.getId(),
             o.toJSON(),
-            senderIp
+            senderIp,
+            hash
     );
 
     var msg = Message.Create(Message.Types.OUT, payload);
@@ -125,6 +130,26 @@ TreeOverlayPeerReplicationProtocol.prototype.sendMessage = function (senderIp, o
 
 };
 
+TreeOverlayPeerReplicationProtocol.prototype.forwardMessage = function (payload) {
+
+    var msg = Message.Create(Message.Types.OUT, payload);
+
+    var callback_rEZpZbnVT8nA = function () {
+        log("Object with ID[" + payload.getObjectId() + "] replicated.");
+    };
+
+    var senderIp = payload.getSenderIp();
+
+    var n = Network.getInstance();
+    //socketId, ip, port, msg, callback
+    var peerIps = this.getPeerIps(senderIp);
+    peerIps.forEach(function (peerIp) {
+        if (peerIp != senderIp) {
+            n.sendUDPMessage(this.socketId, peerIp, this.port, msg, callback_rEZpZbnVT8nA);
+        }
+    }.bind(this));
+};
+
 /**
  * Handle a new incoming message.
  * @param rawMsg
@@ -139,18 +164,20 @@ TreeOverlayPeerReplicationProtocol.prototype.handleMessage = function (rawMsg) {
     // Get the payload
     var payload = repMsg.getPayload();
 
+    log_delivered(payload.getHash());
+
     // Depending on the type of the payload we know what kind of message is it
     switch (payload.getType()) {
         case this.payloadTypes.COUNTER:
             var counter = CRDT.newCounterFromJSON(payload.getObjectId(), JSON.parse(payload.getContent()));
             ReplicationController.NewCRDTsReceived([counter]);
             // continue to replicate the crdt to further peers
-            this.sendMessage(payload.getSenderIp(), counter);
+            this.forwardMessage(payload);
             break;
         case this.payloadTypes.REGISTER:
             var register = CRDT.newRegisterFromJSON(payload.getObjectId(), JSON.parse(payload.getContent()));
             log("Payload: ", payload);
-            this.sendMessage(payload.getSenderIp(), register);
+            this.forwardMessage(payload);
             // continue to replicate the crdt to further peers
             ReplicationController.NewCRDTsReceived([register]);
             break;

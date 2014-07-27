@@ -3,11 +3,12 @@
  */
 var TreeOverlayMessagePayload = (function () {
 
-    function init(t, oId, c, ip) {
+    function init(t, oId, c, ip, h) {
         var type = t;
         var objectId = oId;
         var content = c;
         var fromIp = ip;
+        var hash = h;
 
         return {
             getType: function () {
@@ -26,12 +27,17 @@ var TreeOverlayMessagePayload = (function () {
                 return fromIp;
             },
 
+            getHash: function () {
+                return hash;
+            },
+
             toJSON: function () {
                 var obj = {};
                 obj.type = type;
                 obj.objectId = objectId;
                 obj.content = content;
                 obj.fromIp = fromIp;
+                obj.hash = hash;
                 return JSON.stringify(obj);
             }
         }
@@ -39,7 +45,7 @@ var TreeOverlayMessagePayload = (function () {
 
     function reconstructFromObject(obj) {
 
-        var type, objectId, content, fromIp;
+        var type, objectId, content, fromIp, hash;
         if (obj.type) {
             type = obj.type;
         }
@@ -52,13 +58,16 @@ var TreeOverlayMessagePayload = (function () {
         if (obj.fromIp) {
             fromIp = obj.fromIp;
         }
+        if (obj.hash) {
+            hash = obj.hash;
+        }
 
-        return init(type, objectId, content, fromIp);
+        return init(type, objectId, content, fromIp, hash);
     }
 
     return {
-        new: function (type, objectId, content, fromIp) {
-            return init(type, objectId, content, fromIp);
+        new: function (type, objectId, content, fromIp, hash) {
+            return init(type, objectId, content, fromIp, hash);
         },
         reconstruct: function (jsonString) {
             return reconstructFromObject(jsonString);
