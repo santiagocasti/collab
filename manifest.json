@@ -20,6 +20,8 @@
                 "components/net/newsCastMessagePayload.js",
                 "components/net/newsCastCache.js",
                 "components/net/newsCastPeerReplicationProtocol.js",
+                "components/net/treeOverlayMessagePayload.js",
+                "components/net/treeOverlayPeerReplicationProtocol.js",
                 "components/net/peerDiscoveryProtocol.js",
                 "components/net/peerRecoveryProtocol.js",
                 "components/net/serverReplicationProtocol.js",
