@@ -142,6 +142,10 @@ var Context = (function () {
 
             },
 
+            stopTestCheck: function(){
+                window.clearInterval(interval);
+            },
+
             getAllPeers: function () {
                 var result = [];
                 for (var key in peers) {
