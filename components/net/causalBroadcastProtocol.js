@@ -37,11 +37,13 @@ CausalBroadcastProtocol.prototype.handleMessage = function (rawMsg, socketId) {
     debug("Replication Controller handle message: ", rawMsg);
 
     // Create a generic raw message object
-    var repMsg = Message.CreateFromRawData(Message.Types.IN, rawMsg.data);
+    var repMsg = Message.CreateFromRawData(Message.Types.IN, rawMsg.data, Message.PayloadTypes.CAUSAL);
     debug("Replication message received:", repMsg);
 
     // Get the payload
     var payload = repMsg.getPayload();
+
+    log_delivered(payload.getHash());
 
     // Depending on the type of the payload we know what kind of message is it
     switch (payload.getType()) {
@@ -72,16 +74,20 @@ CausalBroadcastProtocol.prototype.replicate = function (o) {
         type = this.payloadTypes.REGISTER;
     }
 
-    var payload = MessagePayload.new(
+    var n = Network.getInstance();
+
+    var payload = CausalBroadcastMessagePayload.new(
             type,
             o.getId(),
-            o.toJSON()
+            o.toJSON(),
+            createUniqueHash(n.getVPNIp())
     );
 
     var msg = Message.Create(Message.Types.OUT, payload);
 
     var callback_rEZpZbnVT8nA = function (){
         log("Object with ID["+ o.getId()+"] replicated.");
+        log_created(payload.getHash());
     };
 
     var n = Network.getInstance();
