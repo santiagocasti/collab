@@ -13,7 +13,6 @@ function VectorClock(data) {
 
 }
 
-
 VectorClock.prototype.increment = function (id) {
 
     if (!this.private.vector.hasOwnProperty(id)) {
@@ -87,6 +86,16 @@ VectorClock.prototype.getKeys = function () {
 
 VectorClock.prototype.getInternalVector = function () {
     return this.private.vector;
+}
+
+VectorClock.prototype.toString = function (){
+    var allKeys = [];
+    for (var key in this.private.vector){
+        var s = key + ":" + this.private.vector[key];
+        allKeys.push(s);
+    }
+    allKeys.sort();
+    return JSON.stringify(allKeys);
 }
 
 VectorClock.prototype.merge = function (otherVectorClock) {

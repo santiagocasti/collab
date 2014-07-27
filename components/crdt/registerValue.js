@@ -8,7 +8,11 @@ RegisterValue.prototype.toSimpleObject = function (){
     array.value = this.value;
     array.vectorClock = this.vectorClock.getInternalVector();
     return array;
-}
+};
+
+RegisterValue.prototype.toString = function (){
+    return this.vectorClock.toString() + ":" + this.value;
+};
 
 if (typeof module != 'undefined') {
     module.exports = RegisterValue;
