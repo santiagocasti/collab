@@ -70,6 +70,40 @@ function getHighestFromSetOfPairs(aSetOfPairs) {
     return setA[0].vectorClock;
 }
 
+MVRegister.prototype.exactlyEqual = function (otherRegister){
+
+    // compare IDs
+    if (this.private.id !== otherRegister.private.id){
+        return false;
+    }
+
+
+    // obtain deterministic string format of all the values
+    var allValuesThis = [], allValuesOther= [];
+
+    this.private.data.forEach(function(pair){
+        allValuesThis.push(pair.toString());
+    });
+
+    otherRegister.private.data.forEach(function(pair){
+        allValuesOther.push(pair.toString());
+    });
+
+    if (allValuesThis.length != allValuesOther.length){
+        return false;
+    }
+
+    // compare all the values in the two arrays
+    for (var i=0; i < allValuesThis.length; ++i){
+        if (allValuesThis[i] !== allValuesOther[i]){
+            return false;
+        }
+    }
+
+    return true;
+
+}
+
 MVRegister.prototype.merge = function (otherRegister) {
 
     if (!(otherRegister instanceof MVRegister)) {
@@ -81,6 +115,10 @@ MVRegister.prototype.merge = function (otherRegister) {
         return new MVRegister(otherRegister.private.id, otherRegister.private.data)
     } else if (otherRegister.private.data.length === 0) {
         return new MVRegister(this.private.id, this.private.data);
+    }
+
+    if (this.exactlyEqual(otherRegister)){
+        return this;
     }
 
     var finalSet = [];
@@ -131,7 +169,7 @@ MVRegister.prototype.getHigherValues = function (lowestVectorClock) {
     return result;
 }
 
-MVRegister.prototype.toJSON = function () {
+MVRegister.prototype.toObject = function (){
     var bag = {};
     bag['id'] = this.private.id;
     var array = [];
@@ -139,7 +177,12 @@ MVRegister.prototype.toJSON = function () {
         array[array.length] = element.toSimpleObject();
     });
     bag['data'] = array;
-    return JSON.stringify(bag);
+    return bag;
+}
+
+
+MVRegister.prototype.toJSON = function () {
+    return JSON.stringify(this.toObject());
 }
 
 if (typeof module != 'undefined') {

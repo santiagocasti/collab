@@ -105,6 +105,33 @@ describe("Multi Value Registers", function () {
 
     });
 
+    it("can merge to equal registers into one without merging their content.", function (){
+        var identities = getRandomIdentities(2);
+        var idA = identities[0];
+        var idB = identities[1];
+
+        var r1 = CRDT.newRegister(1);
+        var r2 = CRDT.newRegister(1);
+
+        var valueA = "askjdhl1kjh";
+        var valueB = "23123lkj1h2";
+
+        r1.setValue(idA, valueA);
+        r2.setValue(idA, valueA);
+
+        r1 = r1.merge(r2);
+        expect(r1.getValue()).toContain(valueA);
+        expect(r1.getValue().length).toEqual(1);
+
+
+        r1.setValue(idB, valueB);
+        r2.setValue(idB, valueB);
+
+        r2 = r2.merge(r1);
+        expect(r2.getValue()).toContain(valueB);
+        expect(r2.getValue().length).toEqual(1);
+    });
+
     it("can set a value overwriting whatever was before.", function (){
 
         var identities = getRandomIdentities(2);
