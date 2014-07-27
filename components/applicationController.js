@@ -102,6 +102,7 @@ var ApplicationController = (function () {
                 // decrement the counter of online users
                 var c = Context.getInstance();
                 c.setDirectReplicationFlag(false);
+                c.stopTestCheck();
 
                 dataStore.decrementCounter(onlineUserCounterId);
             }
