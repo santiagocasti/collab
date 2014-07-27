@@ -104,9 +104,6 @@ NewsCastPeerReplicationProtocol.prototype.sendMessage = function (peerIp, type, 
 
 NewsCastPeerReplicationProtocol.prototype.processData = function (data, deltaT) {
 
-    log("We should process this data:", data);
-    log("Content is: ", data.getContent());
-    log("Type of Content is: " + (typeof data));
     var crdt, crdts = [], validItems = [];
     var content = data.getContent();
 
