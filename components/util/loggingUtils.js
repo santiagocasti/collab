@@ -42,3 +42,11 @@ function debug(message, object) {
 
     log(message, object, true, 4);
 }
+
+function log_delivered(hash) {
+    log("[delivered]"+hash, false, false, 4);
+}
+
+function log_created(hash){
+    log("[created]"+hash, false, false, 4);
+}
