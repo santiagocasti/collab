@@ -29,18 +29,37 @@ var promise = new Promise(function (resolve, reject) {
 promise.then(function () {
 
 
+//    /**
+//     * Causal Broadcast Protocol
+//     */
+//    var cbProtocol = new CausalBroadcastProtocol(5677);
+//    comm.setPeerReplicationProtocol(cbProtocol);
+//
+//    var replicationDataReceived_DxmWj16N13ZH = (function (data) {
+//        cbProtocol.handleMessage(data);
+//    });
+//
+//    debug("Starting the multicast socket creation part on port ["+cbProtocol.port+"]....");
+//    n.createMulticastSocket(cbProtocol.ip, cbProtocol.port, replicationDataReceived_DxmWj16N13ZH);
+
+
     /**
      * Causal Broadcast Protocol
      */
-    var cbProtocol = new CausalBroadcastProtocol(5677);
+    var cbProtocol = new NewsCastPeerReplicationProtocol(5677);
     comm.setPeerReplicationProtocol(cbProtocol);
 
-    var replicationDataReceived_DxmWj16N13ZH = (function (data) {
-        cbProtocol.handleMessage(data);
+    var replicationDataReceived_DxmWj16N13ZH = (function (data, socketId) {
+        cbProtocol.handleMessage(data, socketId);
     });
 
-    debug("Starting the multicast socket creation part on port ["+cbProtocol.port+"]....");
-    n.createMulticastSocket(cbProtocol.ip, cbProtocol.port, replicationDataReceived_DxmWj16N13ZH);
+    var socketCreated_Y2ZQPh5hE8Et = function (socketId){
+        cbProtocol.setSocketId(socketId);
+    };
+
+    debug("Starting the multicast socket creation part on port [" + cbProtocol.port + "]....");
+    n.createUDPSocket(cbProtocol.socketIp, cbProtocol.port, replicationDataReceived_DxmWj16N13ZH, socketCreated_Y2ZQPh5hE8Et);
+
 
     /**
      * Peer Discovery Protocol
@@ -52,7 +71,7 @@ promise.then(function () {
         pdProtocol.handleMessage(data);
     });
 
-    debug("Starting the multicast socket creation part on port ["+pdProtocol.port+"]....");
+    debug("Starting the multicast socket creation part on port [" + pdProtocol.port + "]....");
     n.createMulticastSocket(pdProtocol.ip, pdProtocol.port, replicationDataReceived_SxqdH6LZHLEb);
 
 }).then(function () {
