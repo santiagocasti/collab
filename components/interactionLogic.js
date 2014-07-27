@@ -25,70 +25,24 @@ app.controller('InteractionCtrl', function ($scope) {
             return;
         }
 
-        // if we are editing this cell, ignore the click
-        if ($scope.rows[row][col].edit === true) {
-            log("Ignoring click cause we are editing this cell.");
-            return;
-        }
-
-        $scope.rows[row][col].edit = true;
-
         log("Cell clicked [" + row + "," + col + "]");
 
         // get the cell
         var $cell = $("#cell" + row + "-" + col);
 
-        // add an input
-        var $input = $('<input>').attr({
-            id: 'editCell',
-            name: 'bar',
-            class: "inputEditCell"
-        });
-
-        // set the value of input to the cell content
-        $input.val($cell.html().trim());
-
-        // remove all the children
-        $cell.empty();
-
-        // append the input to the cell
-        $cell.append($input);
-
-        // refresh styling
-        $cell.hide().show();
-
-        // focus on the input
-        $input.focus();
-
         var callback_j2h3l4kjhdlaks = function (event) {
             // get the value of the input
-            var value = $input.val();
+            var value = $cell[0].innerHTML;
 
-            $cell.hide();
-
-            // clean the cell content
-            $cell.empty();
-            // set the cell content
-            $cell.text(value);
-            // set editing flag to false
-
-            $cell.show();
-
-            $scope.rows[row][col].edit = false;
+            var cell = {};
+            cell.row = row;
+            cell.col = col;
+            cell.value = value;
 
             $scope.saveCellContent(row, col, value);
-
         };
 
-        // when you hit 'intro' is like a submit for this control
-        $input.keydown(function (event) {
-            if (event.keyCode == 13) {
-                callback_j2h3l4kjhdlaks(event);
-            }
-        });
-
-        $input.blur(callback_j2h3l4kjhdlaks);
-
+        $cell.blur(callback_j2h3l4kjhdlaks);
     }
 
     /**
@@ -161,7 +115,7 @@ app.controller('InteractionCtrl', function ($scope) {
         content.forEach(function (cell) {
             value = "";
             if (typeof cell.value == 'string' ||
-                    typeof cell.value == 'number') {
+                typeof cell.value == 'number') {
                 value = cell.value;
             } else if (cell.value.length == 1) {
                 value = cell.value[0];
@@ -176,7 +130,6 @@ app.controller('InteractionCtrl', function ($scope) {
             console.log("Updating cell [" + cell.row + "," + cell.col + "] with value [" + value + "]");
 
         });
-
         $scope.$apply();
     }
 
