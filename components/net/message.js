@@ -48,6 +48,9 @@ var Message = (function () {
                 case NEWS_CAST_PAYLOAD:
                     return init(type, NewsCastMessagePayload.reconstruct(JSON.parse(payload)));
                     break;
+                case CAUSAL_PAYLOAD:
+                    return init(type, CausalBroadcastMessagePayload.reconstruct(JSON.parse(payload)));
+                    break;
                 default:
                     return init(type, MessagePayload.reconstruct(JSON.parse(payload)));
             }
