@@ -8,8 +8,8 @@
     "app": {
         "background": {
             "scripts": [
-                "components/util/hashing.js",
                 "components/util/random.js",
+                "components/util/hashing.js",
                 "components/replication/replicaIdentity.js",
                 "components/replication/peerIdentity.js",
                 "components/storage/dataStore.js",
@@ -17,6 +17,7 @@
                 "components/net/communication.js",
                 "components/net/communicationProtocol.js",
                 "components/net/causalBroadcastProtocol.js",
+                "components/net/causalBroadcastMessagePayload.js",
                 "components/net/newsCastMessagePayload.js",
                 "components/net/newsCastCache.js",
                 "components/net/newsCastPeerReplicationProtocol.js",
