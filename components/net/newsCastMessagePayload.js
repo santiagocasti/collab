@@ -22,6 +22,10 @@ var NewsCastMessagePayload = (function () {
                 return content;
             },
 
+            getTimestamp: function (){
+                return timestamp;
+            },
+
             toJSON: function () {
                 var obj = {};
                 obj.type = type;

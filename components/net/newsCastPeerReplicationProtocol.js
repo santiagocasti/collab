@@ -9,7 +9,7 @@ if (typeof module != 'undefined' && typeof require == 'function') {
 function NewsCastPeerReplicationProtocol(port) {
     CommunicationProtocol.call(this, port);
 
-    const CACHE_SIZE = 256;
+    const CACHE_SIZE = 5;
     const PERIOD_MILISECONDS = 10000;
 
     const REQUEST = 401;
@@ -92,7 +92,6 @@ NewsCastPeerReplicationProtocol.prototype.sendMessage = function (peerIp, type, 
 
     var callback_rEZpZbnVT8nA = function () {
         log("Sent message of type [" + type + "] to [" + peerIp + "].", payload);
-        log("Callback is:", callback);
         if (typeof callback != 'undefined') {
             callback();
         }
@@ -103,13 +102,14 @@ NewsCastPeerReplicationProtocol.prototype.sendMessage = function (peerIp, type, 
 };
 
 
-NewsCastPeerReplicationProtocol.prototype.processData = function (data) {
+NewsCastPeerReplicationProtocol.prototype.processData = function (data, deltaT) {
 
     log("We should process this data:", data);
     log("Content is: ", data.getContent());
-    log("Type of Content is: "+(typeof data));
-    var crdt, crdts = [];
+    log("Type of Content is: " + (typeof data));
+    var crdt, crdts = [], validItems = [];
     var content = data.getContent();
+
     content.forEach(function (item) {
 
         log("ITEM: ", item);
@@ -118,14 +118,25 @@ NewsCastPeerReplicationProtocol.prototype.processData = function (data) {
             crdt = CRDT.newCounterFromJSON(0, item.data);
         } else if (item.type == this.cache.REGISTER_TYPE) {
             crdt = CRDT.newRegisterFromJSON(0, item.data);
-        }else{
-            crdt = '';
+        } else {
+            return;
         }
 
-        if (crdt instanceof Counter || crdt instanceof MVRegister){
+        if (typeof item.hash != 'undefined' &&
+            !this.cache.everDelivered(item.hash)) {
+            log_delivered(item.hash);
+        }
+
+        item.crdt = crdt;
+        validItems.push(item);
+
+        if (crdt instanceof Counter || crdt instanceof MVRegister) {
             crdts.push(crdt);
         }
     }.bind(this));
+
+    // add the new items and truncate the size of the cache
+    this.cache.mergeItems(validItems, deltaT);
 
     ReplicationController.NewCRDTsReceived(crdts);
 };
@@ -137,8 +148,10 @@ NewsCastPeerReplicationProtocol.prototype.processData = function (data) {
 NewsCastPeerReplicationProtocol.prototype.handleMessage = function (rawMsg) {
     debug("Replication Controller handle message: ", rawMsg);
 
+    var tsOnReceive = new Date().getTime();
+
     // Create a generic raw message object
-    var repMsg = Message.CreateFromRawData(Message.Types.IN, rawMsg.data);
+    var repMsg = Message.CreateFromRawData(Message.Types.IN, rawMsg.data, Message.PayloadTypes.NEWS_CAST);
     debug("Replication message received:", repMsg);
 
     // Get the payload
@@ -150,7 +163,10 @@ NewsCastPeerReplicationProtocol.prototype.handleMessage = function (rawMsg) {
             log("Received a REQUEST from " + rawMsg.remoteAddress, payload);
 
             var callback_123jk1hlsj1 = function () {
-                this.processData(payload);
+                // difference in time in between the clocks of the current peer
+                // and the one that sent the data
+                var deltaT = parseInt(payload.getTimestamp()) - tsOnReceive;
+                this.processData(payload, deltaT);
             }.bind(this);
 
             this.sendMessage(rawMsg.remoteAddress, this.payloadTypes.RESPONSE, callback_123jk1hlsj1);
@@ -158,7 +174,10 @@ NewsCastPeerReplicationProtocol.prototype.handleMessage = function (rawMsg) {
             break;
         case this.payloadTypes.RESPONSE:
             log("Received a RESPONSE from " + rawMsg.remoteAddress, payload);
-            this.processData(payload);
+            // difference in time in between the clocks of the current peer
+            // and the one that sent the data
+            var deltaT = parseInt(payload.getTimestamp()) - tsOnReceive;
+            this.processData(payload, deltaT);
             break;
         default:
     }
