@@ -175,15 +175,23 @@ Counter.prototype.merge = function (otherCounter) {
 };
 
 /**
+ * Return the current counter as a very simple object.
+ * @returns {{}}
+ */
+Counter.prototype.toObject = function (){
+    var obj = {};
+    obj['id'] = this.private.id;
+    obj['increment'] = this.private.incrementClock.getInternalVector();
+    obj['decrement'] = this.private.decrementClock.getInternalVector();
+    return obj;
+}
+
+/**
  * Return the current counter in JSON format
  * @returns {*}
  */
 Counter.prototype.toJSON = function () {
-    var bag = {};
-    bag['id'] = this.private.id;
-    bag['increment'] = this.private.incrementClock.getInternalVector();
-    bag['decrement'] = this.private.decrementClock.getInternalVector();
-    return JSON.stringify(bag);
+    return JSON.stringify(this.toObject());
 };
 
 /**
