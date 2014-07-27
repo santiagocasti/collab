@@ -62,6 +62,7 @@ CausalBroadcastProtocol.prototype.replicate = function (o) {
     if (!(o instanceof Counter) &&
         !(o instanceof MVRegister)) {
         log("Error: Counter or MVRegister object required.", o);
+        return;
     }
 
     var type;
