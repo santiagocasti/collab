@@ -37,11 +37,8 @@ var DataStore = (function () {
 
         function notifySubscribers(type, newObjects) {
 
-            debug("Notifying for type["+type+"]:", newObjects);
-
             // trigger the callbacks for each subscriber to any object
             callbacks[type].forEach(function (callback) {
-                debug("Calling callback: "+callback, callback);
                 callback(newObjects);
             });
 
@@ -50,7 +47,6 @@ var DataStore = (function () {
                 if ((o instanceof Counter || o instanceof MVRegister) &&
                         typeof callbacksById[type][o.getId()] != 'undefined') {
                     callbacksById[type][o.getId()].forEach(function (callback){
-                        debug("Calling callback: "+callback, callback);
                         callback(o);
                     });
                 }
@@ -148,7 +144,6 @@ var DataStore = (function () {
                 if (typeof id == 'undefined') {
                     callbacks[NEW_COUNTERS].push(callback);
                 } else {
-                    log("callbacksById id["+id+"]: ", callbacksById);
                     if (!callbacksById[NEW_COUNTERS].hasOwnProperty(id)){
                         callbacksById[NEW_COUNTERS][id] = [];
                     }
