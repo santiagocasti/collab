@@ -28,6 +28,20 @@ var promise = new Promise(function (resolve, reject) {
 
 promise.then(function () {
 
+    /**
+         * Peer Discovery Protocol
+         */
+        var pdProtocol = new PeerDiscoveryProtocol(5678);
+        comm.setPeerDiscoveryProtocol(pdProtocol);
+
+        var replicationDataReceived_SxqdH6LZHLEb = (function (data) {
+            pdProtocol.handleMessage(data);
+        });
+
+        debug("Starting the multicast socket creation part on port [" + pdProtocol.port + "]....");
+        n.createMulticastSocket(pdProtocol.ip, pdProtocol.port, replicationDataReceived_SxqdH6LZHLEb);
+
+}).then(function () {
 
     var CausalBroadcast = 1;
     var NewsCast = 2;
@@ -89,19 +103,6 @@ promise.then(function () {
         default:
             log("ERROR: No peer replication protocol selected.");
     }
-
-    /**
-     * Peer Discovery Protocol
-     */
-    var pdProtocol = new PeerDiscoveryProtocol(5678);
-    comm.setPeerDiscoveryProtocol(pdProtocol);
-
-    var replicationDataReceived_SxqdH6LZHLEb = (function (data) {
-        pdProtocol.handleMessage(data);
-    });
-
-    debug("Starting the multicast socket creation part on port [" + pdProtocol.port + "]....");
-    n.createMulticastSocket(pdProtocol.ip, pdProtocol.port, replicationDataReceived_SxqdH6LZHLEb);
 
 }).then(function () {
             /**
