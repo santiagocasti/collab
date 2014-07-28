@@ -57,6 +57,11 @@ TreeOverlayPeerReplicationProtocol.prototype.getPeerIps = function (senderIp) {
             allIps.push(peer.getIpAddress());
         }
     });
+
+    if (this.ip != senderIp){
+        allIps.push(this.ip);
+    }
+
     allIps.sort();
 
     allIps.unshift(senderIp);
