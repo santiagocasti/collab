@@ -33,7 +33,7 @@ promise.then(function () {
     var NewsCast = 2;
     var TreeOverlay = 3;
 
-    var peerReplicationProtocol = TreeOverlay;
+    var peerReplicationProtocol = CausalBroadcast;
 
     switch (peerReplicationProtocol) {
         case CausalBroadcast:

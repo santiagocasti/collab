@@ -28,10 +28,10 @@ function log(message, object, debug, depth) {
 
     var head = createMsgHead(depth, debug);
 
-    console.log(head + message);
+//    console.log(head + message);
 
     if (object) {
-        console.log(object);
+//        console.log(object);
     }
 }
 
@@ -88,7 +88,7 @@ function sudo_log(message, depth){
 
     console.downloadLogFile = function (){
         var c = Context.getInstance();
-        var n = Network.getInstance()
+        var n = Network.getInstance();
         var date = new Date();
 
         console.save(c.getDeliveryLog(), "Log_"+ n.getVPNIp() +"_"+date.getYear()+"-"+date.getMonth()+"-"+date.getDay()+"_"+date.getHours()+"-"+date.getMinutes()+"-"+date.getSeconds());
