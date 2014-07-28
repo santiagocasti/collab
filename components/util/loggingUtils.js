@@ -28,10 +28,10 @@ function log(message, object, debug, depth) {
 
     var head = createMsgHead(depth, debug);
 
-    //console.log(head + message);
+    console.log(head + message);
 
     if (object) {
-        //console.log(object);
+        console.log(object);
     }
 }
 
@@ -84,5 +84,13 @@ function sudo_log(message, depth){
         a.dataset.downloadurl =  ['text/json', a.download, a.href].join(':')
         e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
         a.dispatchEvent(e)
+    }
+
+    console.downloadLogFile = function (){
+        var c = Context.getInstance();
+        var n = Network.getInstance()
+        var date = new Date();
+
+        console.save(c.getDeliveryLog(), "Log_"+ n.getVPNIp() +"_"+date.getYear()+"-"+date.getMonth()+"-"+date.getDay()+"_"+date.getHours()+"-"+date.getMinutes()+"-"+date.getSeconds());
     }
 })(console);
