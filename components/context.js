@@ -87,6 +87,10 @@ var Context = (function () {
                 triggerCallbacksFor(NEW_PEER_EVENT);
             },
 
+            clearPeerList: function (){
+                peers = {};
+            },
+
             addCallbackForNewPeerEvent: function (callback) {
                 callbacks[NEW_PEER_EVENT].push(callback);
             },

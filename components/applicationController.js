@@ -103,6 +103,7 @@ var ApplicationController = (function () {
                 var c = Context.getInstance();
                 c.setDirectReplicationFlag(false);
                 c.stopTestCheck();
+                c.clearPeerList();
 
                 dataStore.decrementCounter(onlineUserCounterId);
             }
