@@ -92,8 +92,8 @@ var ApplicationController = (function () {
 
                 ReplicationController.Init();
 
-//                var c = Context.getInstance();
-//                c.startTestCheck();
+                var c = Context.getInstance();
+                c.startTestCheck();
             },
 
             appClosed: function () {

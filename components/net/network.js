@@ -464,9 +464,8 @@ var Network = (function () {
             getVPNIp: function () {
                 var ip;
                 networkInterfaces.forEach(function (el) {
-                    var regEx = new RegExp('^192\.168\.0\.[0-9]*$');
+                    var regEx = new RegExp('^192\.168\.1\.[0-9]*$');
                     if (regEx.test(el.ip) == true) {
-
                         ip = el.ip;
                     }
                 });
