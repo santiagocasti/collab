@@ -14,6 +14,8 @@ var Context = (function () {
         var test;
         var interval;
 
+        var deliveryLog = [];
+
         var wasDirectReplicationPerformed = false;
 
 
@@ -104,6 +106,14 @@ var Context = (function () {
             addRunningTest: function (t) {
                 test = t;
                 runningTest = true;
+            },
+
+            addMsg: function (msg){
+                deliveryLog.push(msg);
+            },
+
+            getDeliveryLog: function (){
+                return deliveryLog;
             },
 
             startTestCheck: function () {
