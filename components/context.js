@@ -169,9 +169,9 @@ var Context = (function () {
             },
 
             printPeerList: function () {
-                log("There are " + Object.keys(peers).length + " peers.");
+                console.log("There are " + Object.keys(peers).length + " peers.");
                 for (var key in peers) {
-                    log("[" + key + "] IP:" + peers[key].getIpAddress());
+                    console.log("[" + key + "] IP:" + peers[key].getIpAddress());
                 }
             }
 
