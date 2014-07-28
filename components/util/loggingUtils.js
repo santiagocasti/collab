@@ -55,7 +55,7 @@ function sudo_log(message, depth){
     var head = createMsgHead(depth, debug);
 
     var c = Context.getInstance();
-    c.addMsg();
+    c.addMsg(message);
 
     console.log(head + message);
 }
