@@ -11,8 +11,8 @@ mc.get(mcKey, function (err, json) {
 
     var o = {};
     o.testId = "MULTICAST";
-    o.numUpdates = 10;
-    o.frequency = 1000;
+    o.numUpdates = 200;
+    o.frequency = 500;
 
     mc.set(mcKey, JSON.stringify(o), 0, function(){
        console.log("Set: TRUE");

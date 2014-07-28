@@ -138,7 +138,7 @@ var Context = (function () {
 
                 };
 
-                interval = setInterval(intervalFunction, 1000);
+                interval = setInterval(intervalFunction, 500);
 
             },
 

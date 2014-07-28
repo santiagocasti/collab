@@ -28,10 +28,10 @@ function log(message, object, debug, depth) {
 
     var head = createMsgHead(depth, debug);
 
-    console.log(head + message);
+    //console.log(head + message);
 
     if (object) {
-        console.log(object);
+        //console.log(object);
     }
 }
 
@@ -44,9 +44,15 @@ function debug(message, object) {
 }
 
 function log_delivered(hash) {
-    log("[delivered]"+hash, false, false, 4);
+    sudo_log("|"+(new Date().getTime())+"|delivered|"+hash, 4);
 }
 
 function log_created(hash){
-    log("[created]"+hash, false, false, 4);
+    sudo_log("|"+(new Date().getTime())+"|created|"+hash, 4);
+}
+
+function sudo_log(message, depth){
+    var head = createMsgHead(depth, debug);
+
+    console.log(head + message);
 }
