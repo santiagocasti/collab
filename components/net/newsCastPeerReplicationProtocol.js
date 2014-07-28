@@ -9,7 +9,7 @@ if (typeof module != 'undefined' && typeof require == 'function') {
 function NewsCastPeerReplicationProtocol(port) {
     CommunicationProtocol.call(this, port);
 
-    const CACHE_SIZE = 5;
+    const CACHE_SIZE = 100;
     const PERIOD_MILISECONDS = 10000;
 
     const REQUEST = 401;
