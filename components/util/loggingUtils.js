@@ -28,10 +28,10 @@ function log(message, object, debug, depth) {
 
     var head = createMsgHead(depth, debug);
 
-//    console.log(head + message);
+    console.log(head + message);
 
     if (object) {
-//        console.log(object);
+        console.log(object);
     }
 }
 
@@ -44,11 +44,23 @@ function debug(message, object) {
 }
 
 function log_delivered(hash) {
-    sudo_log("|"+(new Date().getTime())+"|delivered|"+hash, 4);
+
+    var p = new TimeServerProtocol();
+    p.request(function (time){
+        sudo_log("|"+time+"|delivered|"+hash, 4);
+    });
+
 }
 
 function log_created(hash){
-    sudo_log("|"+(new Date().getTime())+"|created|"+hash, 4);
+
+    log("logging item created: "+hash);
+
+    var p = new TimeServerProtocol();
+    p.request(function (time){
+        sudo_log("|"+(time)+"|created|"+hash, 4);
+    });
+
 }
 
 function sudo_log(message, depth){
