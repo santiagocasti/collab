@@ -91,6 +91,6 @@ function sudo_log(message, depth){
         var n = Network.getInstance();
         var date = new Date();
 
-        console.save(c.getDeliveryLog(), "Log_"+ n.getVPNIp() +"_"+date.getYear()+"-"+date.getMonth()+"-"+date.getDay()+"_"+date.getHours()+"-"+date.getMinutes()+"-"+date.getSeconds());
+        console.save(c.getDeliveryLog(), "Log_"+ n.getVPNIp() +"_"+date.getYear()+"-"+date.getMonth()+"-"+date.getDay()+"_"+date.getHours()+"-"+date.getMinutes()+"-"+date.getSeconds()+".txt");
     }
 })(console);
