@@ -68,19 +68,19 @@ promise.then(function () {
             /**
              * NewsCast Protocol
              */
-            var cbProtocol = new NewsCastPeerReplicationProtocol(5677);
+            var cbProtocol = new NewsCastPeerReplicationProtocol(15677);
             comm.setPeerReplicationProtocol(cbProtocol);
 
-            var replicationDataReceived_DxmWj16N13ZH = (function (data, socketId) {
+            var replicationDataReceived_46GGvw9fdAGD = (function (data, socketId) {
                 cbProtocol.handleMessage(data, socketId);
             });
 
-            var socketCreated_Y2ZQPh5hE8Et = function (socketId) {
+            var socketCreated_uQPdci2UcmV3 = function (socketId) {
                 cbProtocol.setSocketId(socketId);
             };
 
             debug("Starting the multicast socket creation part on port [" + cbProtocol.port + "]....");
-            n.createUDPSocket(cbProtocol.socketIp, cbProtocol.port, replicationDataReceived_DxmWj16N13ZH, socketCreated_Y2ZQPh5hE8Et);
+            n.createUDPSocket(cbProtocol.socketIp, cbProtocol.port, replicationDataReceived_46GGvw9fdAGD, socketCreated_uQPdci2UcmV3);
             break;
         case TreeOverlay:
             /**
@@ -89,16 +89,16 @@ promise.then(function () {
             var cbProtocol = new TreeOverlayPeerReplicationProtocol(5677);
             comm.setPeerReplicationProtocol(cbProtocol);
 
-            var replicationDataReceived_DxmWj16N13ZH = (function (data) {
+            var replicationDataReceived_fNypv1eAyizP = (function (data) {
                 cbProtocol.handleMessage(data);
             });
 
-            var socketCreated_Y2ZQPh5hE8Et = function (socketId) {
+            var socketCreated_78onzGvUaScD = function (socketId) {
                 cbProtocol.setSocketId(socketId);
             };
 
             debug("Starting the multicast socket creation part on port [" + cbProtocol.port + "]....");
-            n.createUDPSocket(cbProtocol.socketIp, cbProtocol.port, replicationDataReceived_DxmWj16N13ZH, socketCreated_Y2ZQPh5hE8Et);
+            n.createUDPSocket(cbProtocol.socketIp, cbProtocol.port, replicationDataReceived_fNypv1eAyizP, socketCreated_78onzGvUaScD);
             break;
         default:
             log("ERROR: No peer replication protocol selected.");
