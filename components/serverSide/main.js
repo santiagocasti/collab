@@ -46,6 +46,14 @@ function isTestRequest(request) {
             parts[1].toLowerCase() == 'test'; // to the resource basedata
 }
 
+function isTimeRequest(request){
+    var path = url.parse(request.url).pathname;
+    var parts = path.split("/");
+    return typeof request.method == 'string' &&
+            request.method.toLowerCase() == 'get' && // GET request
+            parts[1].toLowerCase() == 'time'; // to the resource basedata
+}
+
 http.createServer(function (request, response) {
 
     var postData = "";
@@ -54,13 +62,15 @@ http.createServer(function (request, response) {
     });
 
     var path = url.parse(request.url).pathname;
-    console.log('Request for: ' + path);
-    console.log("Remote Address: " + request.connection.remoteAddress);
+//    console.log('Request for [' + path + '] from ['+request.connection.remoteAddress+']');
 
     request.on('end', function () {
 //        console.log('POSTed: ' + postData);
 
-        if (isPeerReplicationRequest(request)) {
+        if (isTimeRequest(request)){
+              // handle time request
+              handleTimeRequest(response);
+        } else if (isPeerReplicationRequest(request)) {
             // handle peer replication request
             handlePeerReplicationRequest(request, response, postData);
         } else if (isDirectReplicationRequest(request)) {
@@ -79,6 +89,11 @@ http.createServer(function (request, response) {
 }).listen(ServerConstants.Port, ServerConstants.IP);
 
 
+function handleTimeRequest(response){
+    var ts = "" + (new Date().getTime());
+    finishRequest(response, ts);
+}
+
 function handleTestRequest(response, remoteAddress) {
 
     var mc = getMcClient();
@@ -91,10 +106,10 @@ function handleTestRequest(response, remoteAddress) {
 
     mc.get(mcKey, function (err, json) {
         if (typeof json == 'string') {
-            console.log("Replying: " + json);
+//            console.log("Replying: " + json);
             finishRequest(response, json);
         } else {
-            console.log("Replying: {}");
+//            console.log("Replying: {}");
             finishRequest(response, "{}");
         }
     });
@@ -185,8 +200,8 @@ function updateCRDTFromCache(id, data, response, crdtName) {
             existingCrdt = CRDT.newFromJSON(id, {}, crdtName);
         }
 
-        console.log("Existing" + existingCrdt.toJSON());
-        console.log("New" + newCrdt.toJSON());
+//        console.log("Existing" + existingCrdt.toJSON());
+//        console.log("New" + newCrdt.toJSON());
 
         // merge the new register with the one we got from cache
         newCrdt = existingCrdt.merge(newCrdt);
@@ -257,18 +272,18 @@ function handleDirectReplicationRequest(response) {
     var counterName = 'Counter';
     var registerName = 'MVRegister';
 
-    console.log("A");
+//    console.log("A");
 
     var counterMcKey = KeyGen.getIdSetKey(counterName);
     var registerMcKey = KeyGen.getIdSetKey(registerName);
 
     var mc = getMcClient();
 
-    console.log("B");
+//    console.log("B");
 
     mc.get([counterMcKey, registerMcKey], function (err, data) {
 
-        console.log("C");
+//        console.log("C");
 
 //        console.log("DATA: " + JSON.stringify(data));
 
@@ -280,7 +295,7 @@ function handleDirectReplicationRequest(response) {
         }
 
 
-        console.log("D");
+//        console.log("D");
 
 //        console.log("counter IDs: " + JSON.stringify(data[counterMcKey]));
 //        console.log("register IDs: " + JSON.stringify(data[registerMcKey]));
