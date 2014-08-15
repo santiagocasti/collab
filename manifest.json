@@ -27,6 +27,7 @@
                 "components/net/peerRecoveryProtocol.js",
                 "components/net/serverReplicationProtocol.js",
                 "components/net/serverRecoveryProtocol.js",
+                "components/net/timeServerProtocol.js",
                 "components/net/message.js",
                 "components/net/messagePayload.js",
                 "components/net/messageEncoder.js",
@@ -69,7 +70,7 @@
                 "udp-send-to"
             ]
         },
-        "http://172.31.14.82:8124/*"
+        "http://192.168.0.102:8124/*"
     ]
 
 }
