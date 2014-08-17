@@ -40,6 +40,7 @@ function isDirectReplicationRequest(request) {
 
 function isTestRequest(request) {
     var path = url.parse(request.url).pathname;
+    console.log('['+(new Date().getTime())+'] Request for [' + path + '] from ['+request.connection.remoteAddress+']');
     var parts = path.split("/");
     return typeof request.method == 'string' &&
             request.method.toLowerCase() == 'get' && // GET request
@@ -61,7 +62,7 @@ http.createServer(function (request, response) {
         postData += chunk;
     });
 
-    var path = url.parse(request.url).pathname;
+//    var path = url.parse(request.url).pathname;
 //    console.log('Request for [' + path + '] from ['+request.connection.remoteAddress+']');
 
     request.on('end', function () {
