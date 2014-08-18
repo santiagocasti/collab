@@ -29,6 +29,8 @@ var Network = (function () {
 
         var networkInterfaces = [];
 
+        var udpCallbacks = [];
+
         /**
          * Helper function to get the network interface object
          * for a given an IP assigned to the current host.
@@ -261,11 +263,11 @@ var Network = (function () {
          * @param ip
          * @param port
          */
-        function createUDPSocket(resolve, ip, port) {
+        function createUDPSocket(resolve, ip, port, onReceive) {
 
             debug("Creating UDP Socket on [" + ip + ":" + port + "] ");
 
-            chrome.sockets.udp.create({}, function (socketInfo) {
+            chrome.sockets.udp.create({bufferSize: 65535}, function (socketInfo) {
 
                 var socketId = socketInfo.socketId;
 
@@ -273,6 +275,8 @@ var Network = (function () {
                     handleSocketCreationError(socketId, 1, socketInfo);
                     return;
                 }
+
+                addUdpSocketListener(socketId, onReceive);
 
                 debug("Calling bind with: socketId[" + socketId + "] ip[" + ip + "] port[" + port + "]")
 
@@ -306,7 +310,7 @@ var Network = (function () {
             chrome.sockets.udp.send(socketId, arrayBuffer, ip, port, function (sendInfo) {
                 var msgPayload = m.getPayload();
                 debug("Sent message through socketId[" + socketId + "]: " + msgPayload.toJSON(), sendInfo);
-                if (typeof callbackFunction != 'undefined'){
+                if (typeof callbackFunction != 'undefined') {
                     callbackFunction();
                 }
             });
@@ -347,7 +351,7 @@ var Network = (function () {
                     log("RESULT ON MULTICAST TTL WAS:" + result);
 
                     // Set onReceive callback
-                    chrome.sockets.udp.onReceive.addListener(onReceive);
+                    addUdpSocketListener(socketId, onReceive);
 
 //                    Disable loopback on multicast
                     chrome.sockets.udp.setMulticastLoopbackMode(socketId, false, function (result) {
@@ -449,6 +453,25 @@ var Network = (function () {
                 default:
                     log("Don't know how to close socket [" + socketId + "] of type [" + type + "]");
             }
+        }
+
+        function handleUdpOnReceiveCallbacks(info) {
+
+            udpCallbacks.forEach(function (el) {
+                if (info.socketId == el.socketId) {
+                    el.callback(info);
+                }
+            });
+
+        }
+
+        function addUdpSocketListener(socketId, callback) {
+
+            var obj = {};
+            obj.socketId = socketId;
+            obj.callback = callback;
+
+            udpCallbacks.push(obj);
         }
 
 
@@ -578,6 +601,10 @@ var Network = (function () {
 
             },
 
+            setupUdpOnReceiveEvent: function () {
+                chrome.sockets.udp.onReceive.addListener(handleUdpOnReceiveCallbacks);
+            },
+
             createUDPSocket: function (ip, port, onReceive, onCreation) {
 
                 var onCreated_Ht1shwRi6RfP = function (socketId) {
@@ -585,9 +612,7 @@ var Network = (function () {
                     onCreation(socketId);
                 };
 
-                chrome.sockets.udp.onReceive.addListener(onReceive);
-
-                createUDPSocket(onCreated_Ht1shwRi6RfP, ip, port);
+                createUDPSocket(onCreated_Ht1shwRi6RfP, ip, port, onReceive);
             },
 
             sendMessageThroughNewSocket: function (peerIp, peerPort, msg) {

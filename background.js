@@ -21,6 +21,7 @@ var serverRecoveryProtocol = new ServerRecoveryProtocol();
 comm.setServerRecoveryProtocol(serverRecoveryProtocol);
 
 var n = Network.getInstance();
+n.setupUdpOnReceiveEvent();
 
 var promise = new Promise(function (resolve, reject) {
     n.loadNetworkInterfaces(resolve);
