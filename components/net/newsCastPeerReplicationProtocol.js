@@ -9,16 +9,14 @@ if (typeof module != 'undefined' && typeof require == 'function') {
 function NewsCastPeerReplicationProtocol(port) {
     CommunicationProtocol.call(this, port);
 
-    const CACHE_SIZE = 100;
-    const PERIOD_MILISECONDS = 10000;
+    const CACHE_SIZE = 60;
+    const PERIOD_MILISECONDS = 1500;
 
     const REQUEST = 401;
     const RESPONSE = 402;
 
 
-    this.numMessagesSent = 0;
-
-//    var n = Network.getInstance();
+    var n = Network.getInstance();
     this.ip = n.getVPNIp();
     this.socketIp = "0.0.0.0";
 
@@ -37,12 +35,12 @@ function NewsCastPeerReplicationProtocol(port) {
      */
     var intervalFunction = function () {
 
-        log("Executing NewsCast Protocol...");
+		debug("Executing NewsCast Protocol...");
 
         var c = Context.getInstance();
         var allPeers = c.getAllPeers();
         if (allPeers.length <= 0) {
-            log("Can't execute NewsCast Protocol because there are no peers.");
+          	log("Can't execute NewsCast Protocol because there are no peers.");
             return;
         }
 
@@ -51,12 +49,6 @@ function NewsCastPeerReplicationProtocol(port) {
             return;
         }
 
-        if (this.numMessagesSent == 10) {
-            window.clearInterval(this.interval);
-            return;
-        }
-
-        this.numMessagesSent++;
 
         // select the peer to exchange cache with
         var peer = allPeers[getRandomInt(0, allPeers.length - 1)];
@@ -91,7 +83,7 @@ NewsCastPeerReplicationProtocol.prototype.sendMessage = function (peerIp, type, 
     var msg = Message.Create(Message.Types.OUT, payload);
 
     var callback_rEZpZbnVT8nA = function () {
-        log("Sent message of type [" + type + "] to [" + peerIp + "].", payload);
+
         if (typeof callback != 'undefined') {
             callback();
         }
@@ -109,8 +101,6 @@ NewsCastPeerReplicationProtocol.prototype.processData = function (data, deltaT) 
 
     content.forEach(function (item) {
 
-        log("ITEM: ", item);
-
         if (item.type == this.cache.COUNTER_TYPE) {
             crdt = CRDT.newCounterFromJSON(0, item.data);
         } else if (item.type == this.cache.REGISTER_TYPE) {
@@ -120,16 +110,17 @@ NewsCastPeerReplicationProtocol.prototype.processData = function (data, deltaT) 
         }
 
         if (typeof item.hash != 'undefined' &&
-            !this.cache.everDelivered(item.hash)) {
+            !this.cache.everDelivered(item.hash.toString())) {
             log_delivered(item.hash);
+
+            item.crdt = crdt;
+            validItems.push(item);
+
+            if (crdt instanceof Counter || crdt instanceof MVRegister) {
+                crdts.push(crdt);
+            }
         }
 
-        item.crdt = crdt;
-        validItems.push(item);
-
-        if (crdt instanceof Counter || crdt instanceof MVRegister) {
-            crdts.push(crdt);
-        }
     }.bind(this));
 
     // add the new items and truncate the size of the cache
@@ -143,13 +134,11 @@ NewsCastPeerReplicationProtocol.prototype.processData = function (data, deltaT) 
  * @param rawMsg
  */
 NewsCastPeerReplicationProtocol.prototype.handleMessage = function (rawMsg) {
-    debug("Replication Controller handle message: ", rawMsg);
 
     var tsOnReceive = new Date().getTime();
 
     // Create a generic raw message object
     var repMsg = Message.CreateFromRawData(Message.Types.IN, rawMsg.data, Message.PayloadTypes.NEWS_CAST);
-    debug("Replication message received:", repMsg);
 
     // Get the payload
     var payload = repMsg.getPayload();
@@ -157,8 +146,6 @@ NewsCastPeerReplicationProtocol.prototype.handleMessage = function (rawMsg) {
     // Depending on the type of the payload we know what kind of message is it
     switch (payload.getType()) {
         case this.payloadTypes.REQUEST:
-            log("Received a REQUEST from " + rawMsg.remoteAddress, payload);
-
             var callback_123jk1hlsj1 = function () {
                 // difference in time in between the clocks of the current peer
                 // and the one that sent the data
@@ -170,7 +157,6 @@ NewsCastPeerReplicationProtocol.prototype.handleMessage = function (rawMsg) {
 
             break;
         case this.payloadTypes.RESPONSE:
-            log("Received a RESPONSE from " + rawMsg.remoteAddress, payload);
             // difference in time in between the clocks of the current peer
             // and the one that sent the data
             var deltaT = parseInt(payload.getTimestamp()) - tsOnReceive;
@@ -182,7 +168,7 @@ NewsCastPeerReplicationProtocol.prototype.handleMessage = function (rawMsg) {
 
 NewsCastPeerReplicationProtocol.prototype.replicate = function (o) {
 
-    if (!(o instanceof Counter) && !(o instanceof MVRegister)) {
+    if (!(o instanceof Counter || o instanceof MVRegister)) {
         log("Error: Counter or MVRegister object required.", o);
         return;
     }
@@ -191,5 +177,5 @@ NewsCastPeerReplicationProtocol.prototype.replicate = function (o) {
 };
 
 if (typeof module != 'undefined') {
-    module.exports = CausalBroadcastProtocol;
+    module.exports = NewsCastPeerReplicationProtocol;
 }

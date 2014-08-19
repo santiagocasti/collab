@@ -52,13 +52,12 @@ function log_delivered(hash) {
 
 }
 
-function log_created(hash){
-
-    log("logging item created: "+hash);
+function log_created(hash, callback){
 
     var p = new TimeServerProtocol();
     p.request(function (time){
         sudo_log("|"+(time)+"|created|"+hash, 4);
+        callback();
     });
 
 }
@@ -103,6 +102,6 @@ function sudo_log(message, depth){
         var n = Network.getInstance();
         var date = new Date();
 
-        console.save(c.getDeliveryLog(), "Log_"+ n.getVPNIp() +"_"+date.getYear()+"-"+date.getMonth()+"-"+date.getDay()+"_"+date.getHours()+"-"+date.getMinutes()+"-"+date.getSeconds()+".txt");
+        console.save(c.getDeliveryLog(), "Log_"+ n.getVPNIp() +".txt");
     }
 })(console);
