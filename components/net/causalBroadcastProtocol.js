@@ -83,15 +83,19 @@ CausalBroadcastProtocol.prototype.replicate = function (o) {
             createUniqueHash(n.getVPNIp())
     );
 
-    var msg = Message.Create(Message.Types.OUT, payload);
+    var callback_1lk2jh31l = function (){
 
-    var callback_rEZpZbnVT8nA = function (){
-        log("Object with ID["+ o.getId()+"] replicated.");
-        log_created(payload.getHash());
-    };
+        var msg = Message.Create(Message.Types.OUT, payload);
 
-    var n = Network.getInstance();
-    n.sendMulticastMessage(this.ip, this.port, msg, callback_rEZpZbnVT8nA);
+        var callback_rEZpZbnVT8nA = function (){
+            log("Object with ID["+ o.getId()+"] replicated.");
+        };
+
+        var n = Network.getInstance();
+        n.sendMulticastMessage(this.ip, this.port, msg, callback_rEZpZbnVT8nA);
+    }.bind(this);
+
+    log_created(payload.getHash(), callback_1lk2jh31l);
 }
 
 if (typeof module != 'undefined') {
