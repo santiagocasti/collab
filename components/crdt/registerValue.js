@@ -3,6 +3,9 @@ function RegisterValue(vectorClock, value) {
     this.vectorClock = vectorClock;
 }
 
+/**
+ * @returns {{}}
+ */
 RegisterValue.prototype.toSimpleObject = function (){
     var array = {};
     array.value = this.value;
@@ -10,6 +13,9 @@ RegisterValue.prototype.toSimpleObject = function (){
     return array;
 };
 
+/**
+ * @returns {string}
+ */
 RegisterValue.prototype.toString = function (){
     return this.vectorClock.toString() + ":" + this.value;
 };

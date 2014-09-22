@@ -1,3 +1,6 @@
+/**
+ * BackendMessaging Class
+ */
 var BackEndMessaging = (function () {
 
 
@@ -12,6 +15,12 @@ var BackEndMessaging = (function () {
 
     return {
 
+        /**
+         * Handle message on receive
+         * @param rawMessage
+         * @param sender
+         * @param sendResponse
+         */
         handleMessage: function (rawMessage, sender, sendResponse) {
 
             debug("BackEndMessaging handleMessage");
@@ -66,6 +75,12 @@ var BackEndMessaging = (function () {
 
         },
 
+        /**
+         * Send a message
+         * @param message
+         * @param onResponse
+         * @returns {*}
+         */
         sendMessage: function (message, onResponse) {
             return sendMessage(message, onResponse);
         }

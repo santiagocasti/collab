@@ -22,17 +22,13 @@ var ApplicationController = (function () {
         }
         dataStore.subscribeToNewRegister(callback_QyRg1nwivb0n);
 
-        /**
-         * Send a message to the front end to update the online user counter
-         */
+        //Send a message to the front end to update the online user counter
         function notifyFrontEndAboutOnlineUserCounter(count) {
             var msg = MessagePassing.MessageToFront(MessagePassing.MessageTypes.USER_COUNT_UPDATED, count);
             BackEndMessaging.sendMessage(msg);
         }
 
-        /**
-         * Send a message to the front end to update a set of cells
-         */
+        //Send a message to the front end to update a set of cells
         function notifyFronEndAboutNewCells(cells) {
 
             var arrayOfCells = [];
@@ -73,38 +69,51 @@ var ApplicationController = (function () {
 
         return {
 
+            // update the value of a cell
             updateCell: function (row, column, value) {
                 var id = row + "-" + column;
                 dataStore.saveCell(id, value);
             },
 
+            // launch the necessary processes associated with application startup
             appStarted: function () {
                 debug("App started code");
 
                 var c = Context.getInstance();
+
+                // update the replica identity
                 var ri = c.getReplicaIdentity();
                 ri.updateTimestamp();
                 c.setReplicaIdentity(ri);
 
+                // increment the online user counter
                 dataStore.incrementCounter(onlineUserCounterId);
 
+                // update online user counter
                 notifyFrontEndAboutOnlineUserCounter(dataStore.getCounterValue(onlineUserCounterId));
 
+                // start recovery protocol
                 ReplicationController.Init();
 
-                var c = Context.getInstance();
-                c.startTestCheck();
+                // start checking for experiments to run
+                //c.startTestCheck();
             },
 
+            // launch the necessary processes associated with application closing
             appClosed: function () {
                 debug("App closing");
 
-                // decrement the counter of online users
+                // set direct replication flag as false, so it will attempt when restarted
                 var c = Context.getInstance();
                 c.setDirectReplicationFlag(false);
+
+                // stop checking for experiments to run
                 c.stopTestCheck();
+
+                // clear the list of known peers
                 c.clearPeerList();
 
+                // decrement the counter of online users
                 dataStore.decrementCounter(onlineUserCounterId);
             }
 

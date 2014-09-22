@@ -1,3 +1,7 @@
+/**
+ * Context class
+ * In charge of holding peer environment knowledge, experiment execution and general application flags.
+ */
 var Context = (function () {
 
     var instance;
@@ -6,19 +10,37 @@ var Context = (function () {
 
     function init() {
 
+        // identity of the local replica
         var replicaIdentity;
+
+        // known peers in LAN
         var peers = {};
+
+        // callbacks for events
         var callbacks = {};
         callbacks[NEW_PEER_EVENT] = [];
+
+        // is the current app running a test?
         var runningTest = false;
+
+        // which test is the current app running?
         var test;
+
+        // what is the interval used for checking for tests?
         var interval;
 
+        // log of created and delivered updates (for experiments)
         var deliveryLog = [];
 
+        // self explanatory
         var wasDirectReplicationPerformed = false;
 
 
+        /**
+         * Remove identities of crashed peers from the list of known peers.
+         * We know a peerIdentity belongs to a crashed peer, when we have
+         * two identities with same id, but different timestamps.
+         */
         function purgePeersSet() {
 
             // build a map of id to timestamp
@@ -53,15 +75,26 @@ var Context = (function () {
 
         }
 
+        /**
+         * Trigger the callbacks attached to the given event.
+         * @param event
+         */
         function triggerCallbacksFor(event) {
-            if (callbacks[NEW_PEER_EVENT].length > 0) {
-                var callback;
-                callbacks[NEW_PEER_EVENT].forEach(function (val) {
-                    val();
-                });
+            switch (event) {
+                case NEW_PEER_EVENT:
+                    if (callbacks[NEW_PEER_EVENT].length > 0) {
+                        var callback;
+                        callbacks[NEW_PEER_EVENT].forEach(function (val) {
+                            val();
+                        });
+                    }
+                    break;
+                default:
+                    error("Unknown event type", event);
             }
         }
 
+        // list of public functions
         return {
             setReplicaIdentity: function (identity) {
                 replicaIdentity = identity;
@@ -87,7 +120,7 @@ var Context = (function () {
                 triggerCallbacksFor(NEW_PEER_EVENT);
             },
 
-            clearPeerList: function (){
+            clearPeerList: function () {
                 peers = {};
             },
 
@@ -112,14 +145,19 @@ var Context = (function () {
                 runningTest = true;
             },
 
-            addMsg: function (msg){
+            addMsg: function (msg) {
                 deliveryLog.push(msg);
             },
 
-            getDeliveryLog: function (){
+            getDeliveryLog: function () {
                 return deliveryLog;
             },
 
+            /**
+             * Check with the server if there is any experiment to run.
+             * If the server replies there is an experiment,
+             * communicate the frontend about it and start the execution.
+             */
             startTestCheck: function () {
 
                 var intervalFunction = function () {
@@ -156,7 +194,7 @@ var Context = (function () {
 
             },
 
-            stopTestCheck: function(){
+            stopTestCheck: function () {
                 window.clearInterval(interval);
             },
 
@@ -174,8 +212,6 @@ var Context = (function () {
                     console.log("[" + key + "] IP:" + peers[key].getIpAddress());
                 }
             }
-
-
         }
     }
 

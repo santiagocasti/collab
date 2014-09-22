@@ -37,7 +37,11 @@ function isDirectReplicationRequest(request) {
             parts[1].toLowerCase() == 'basedata'; // to the resource basedata
 }
 
-
+/**
+ * Check if the request is one of the Test checking protocol
+ * @param request
+ * @returns {boolean}
+ */
 function isTestRequest(request) {
     var path = url.parse(request.url).pathname;
     console.log('['+(new Date().getTime())+'] Request for [' + path + '] from ['+request.connection.remoteAddress+']');
@@ -47,6 +51,11 @@ function isTestRequest(request) {
             parts[1].toLowerCase() == 'test'; // to the resource basedata
 }
 
+/**
+ * Check if the request is one of the time protocol.
+ * @param request
+ * @returns {boolean}
+ */
 function isTimeRequest(request){
     var path = url.parse(request.url).pathname;
     var parts = path.split("/");
@@ -55,6 +64,9 @@ function isTimeRequest(request){
             parts[1].toLowerCase() == 'time'; // to the resource basedata
 }
 
+/**
+ * Create the server, and handle requests.
+ */
 http.createServer(function (request, response) {
 
     var postData = "";
@@ -99,11 +111,6 @@ function handleTestRequest(response, remoteAddress) {
 
     var mc = getMcClient();
     var mcKey = KeyGen.getTestKey();
-
-//    var o = {};
-//    o.testId = "MULTICAST";
-//    o.numUpdates = 10;
-//    o.frequency = 1000;
 
     mc.get(mcKey, function (err, json) {
         if (typeof json == 'string') {

@@ -1,3 +1,7 @@
+/**
+ * Communication Protocol Class
+ * Base class for all the specific communication protocols.
+ */
 function CommunicationProtocol(port) {
     this.private = {};
     this.name = "CommunicationProtocol";

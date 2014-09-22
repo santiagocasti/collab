@@ -5,7 +5,9 @@ if (typeof module != 'undefined' && typeof require == 'function') {
     var Counter = require('../crdt/pncounter.js');
 }
 
-
+/**
+ * CRDT factory class
+ */
 var CRDT = (function () {
 
     return {

@@ -1,3 +1,8 @@
+/**
+ * DataStore class
+ * In charge of handling storage of the data produced by the application,
+ * received through replication and trigger replication processes.
+ */
 var DataStore = (function () {
 
     var instance;
@@ -55,10 +60,18 @@ var DataStore = (function () {
 
         return {
 
+            /**
+             * Return all the counters stored.
+             * @returns {{}}
+             */
             getCounters: function (){
                 return counters;
             },
 
+            /**
+             * Save the given counters given.
+             * @param counters
+             */
             saveCounters: function (counters) {
 
                 if (!(counters instanceof Array)) {
@@ -81,10 +94,18 @@ var DataStore = (function () {
                 }
             },
 
+            /**
+             * Get all the registers stored.
+             * @returns {{}}
+             */
             getRegisters: function (){
                 return registers;
             },
 
+            /**
+             * Save all the registers given.
+             * @param regs
+             */
             saveRegisters: function (regs) {
 
                 if (!(regs instanceof Array)) {
@@ -107,6 +128,11 @@ var DataStore = (function () {
                 }
             },
 
+            /**
+             * Save a cell (implicitly as MVRegister).
+             * @param id
+             * @param value
+             */
             saveCell: function (id, value) {
 
                 var c = Context.getInstance();
@@ -117,6 +143,10 @@ var DataStore = (function () {
                 ReplicationController.Replicate(register);
             },
 
+            /**
+             * Increment the counter identified by id with the local replicaIdentity.
+             * @param id
+             */
             incrementCounter: function (id) {
                 var c = Context.getInstance();
                 var counter = getCounter(id);
@@ -126,6 +156,10 @@ var DataStore = (function () {
                 ReplicationController.Replicate(counter);
             },
 
+            /**
+             * Decrement the counter identified by id with the local replicaIdentity..
+             * @param id
+             */
             decrementCounter: function (id) {
                 var c = Context.getInstance();
                 var counter = getCounter(id);
@@ -135,11 +169,21 @@ var DataStore = (function () {
                 ReplicationController.Replicate(counter);
             },
 
+            /**
+             * Get the value of the counter identified by the id given.
+             * @param id
+             * @returns {number|*}
+             */
             getCounterValue: function (id) {
                 var c = getCounter(id);
                 return c.getCount();
             },
 
+            /**
+             * Subscribe to the event of new counter received.
+             * @param callback
+             * @param id
+             */
             subscribeToNewCounter: function (callback, id) {
                 if (typeof id == 'undefined') {
                     callbacks[NEW_COUNTERS].push(callback);
@@ -151,6 +195,11 @@ var DataStore = (function () {
                 }
             },
 
+            /**
+             * Subscribe to the event of new register received.
+             * @param callback
+             * @param id
+             */
             subscribeToNewRegister: function (callback, id) {
                 if (typeof id == 'undefined') {
                     callbacks[NEW_REGISTERS].push(callback);

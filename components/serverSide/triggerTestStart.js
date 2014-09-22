@@ -1,6 +1,10 @@
 var Memcached = require('memcached');
 var KeyGen = require('./mcKeyGenerator.js');
 
+/**
+ * This script is used to trigger the beginning of the experiments.
+ */
+
 var mc = new Memcached("localhost:11211");
 
 var mcKey = KeyGen.getTestKey();

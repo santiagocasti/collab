@@ -1,5 +1,9 @@
 const DEBUG_MODE_ON = true;
 
+/**
+ * This file contains several logging functions used all accross the application.
+ */
+
 function createMsgHead(depth, debug) {
     var e = new Error;
     var line = e.stack.split('\n')[depth];

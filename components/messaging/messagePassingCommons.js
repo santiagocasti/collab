@@ -5,6 +5,11 @@ function MessagePrototype(from, to, type, content) {
     this.content = content;
 }
 
+/**
+ * MessagePassing Class
+ * This class is a backbone for the frontend
+ * and backend message passing classes.
+ */
 var MessagePassing = (function () {
 
     const FRONTEND = "front-end";

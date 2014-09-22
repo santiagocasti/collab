@@ -1,3 +1,12 @@
+/**
+ * NewsCastCache Class
+ * This is the class representing the cache exchanged as part of
+ * the gossip protocol NewsCast. It is composed of NewsCastItems.
+ *
+ * @param maxSize
+ * @param localIp
+ * @constructor
+ */
 function NewsCastCache(maxSize, localIp) {
 
     this.COUNTER_TYPE = 501;
@@ -11,6 +20,10 @@ function NewsCastCache(maxSize, localIp) {
 
 }
 
+/**
+ * Add items to the cache.
+ * @param itemsArray
+ */
 NewsCastCache.prototype.addItems = function (itemsArray) {
 
     var itemObj;
@@ -39,6 +52,12 @@ NewsCastCache.prototype.addItems = function (itemsArray) {
     this.adjustSize();
 };
 
+/**
+ * Merge the items in the cache with the ones provided,
+ * given the deltaTime to adjust the timestamps.
+ * @param itemsArray
+ * @param deltaT
+ */
 NewsCastCache.prototype.mergeItems = function (itemsArray, deltaT) {
 
 
@@ -60,6 +79,11 @@ NewsCastCache.prototype.mergeItems = function (itemsArray, deltaT) {
     this.adjustSize();
 }
 
+/**
+ * Was the update represented by the hash given ever delivered?
+ * @param hash
+ * @returns {boolean}
+ */
 NewsCastCache.prototype.everDelivered = function (hash){
 
     if (this.mapHistory.hasOwnProperty(hash)){
@@ -69,6 +93,9 @@ NewsCastCache.prototype.everDelivered = function (hash){
     return false;
 }
 
+/**
+ * Adjust the size of the cache by trimming the last items in the cache.
+ */
 NewsCastCache.prototype.adjustSize = function () {
 
     this.items.sort(NewsCastCacheItem.prototype.compare);
@@ -88,11 +115,28 @@ NewsCastCache.prototype.adjustSize = function () {
 
 };
 
+/**
+ * Convert to JSON.
+ * @returns {*}
+ */
 NewsCastCache.prototype.toJSON = function () {
     return JSON.stringify(this.items);
 }
 
 
+/**
+ * NewsCastCacheItem class
+ * Represents an update to certain CRDT. It has the crdt data,
+ * the ip of the replica that created the update, the type of crdt,
+ * a hash to uniquely identify the update and the timestamp of
+ * when it was created.
+ * @param crdt
+ * @param ip
+ * @param type
+ * @param hash
+ * @param ts
+ * @constructor
+ */
 function NewsCastCacheItem(crdt, ip, type, hash, ts) {
 
     this.ts = ts;
@@ -104,6 +148,12 @@ function NewsCastCacheItem(crdt, ip, type, hash, ts) {
 
 }
 
+/**
+ * Compare to items.
+ * @param a
+ * @param b
+ * @returns {number}
+ */
 NewsCastCacheItem.prototype.compare = function (a, b) {
     if (a.ts < b.ts) {
         return 1;

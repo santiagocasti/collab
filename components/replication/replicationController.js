@@ -7,6 +7,11 @@ if (typeof module != 'undefined' && typeof require == 'function') {
     var ServerConstants = require('../serverSide/serverConstants.js');
 }
 
+/**
+ * ReplicationController class
+ * This class is in charge of handling replication of the data created in the current app,
+ * as well as integrating changes received through replication from other apps in LAN.
+ */
 var ReplicationController = (function () {
 
 
@@ -29,6 +34,11 @@ var ReplicationController = (function () {
 
     return {
 
+        /**
+         * Process a CRDT received through replication.
+         * @param data
+         * @constructor
+         */
         NewCRDTsReceived: function (data) {
 
             if (!(data instanceof Array)) {
@@ -57,6 +67,11 @@ var ReplicationController = (function () {
             dataStore.saveRegisters(registers);
         },
 
+        /**
+         * Replicate a CRDT.
+         * @param crdt
+         * @constructor
+         */
         Replicate: function (crdt) {
 
             if (!(crdt instanceof Counter) && !(crdt instanceof MVRegister)) {
@@ -73,12 +88,21 @@ var ReplicationController = (function () {
             serverRepProtocol.request(crdt);
         },
 
+        /**
+         * Share the PeerIdentity of the current peer through multicast IPv4.
+         * @constructor
+         */
         SharePeerIdentity: function () {
             var comm = Communication.getInstance();
             var peerDiscoveryProt = comm.getPeerDiscoveryProtocol();
             peerDiscoveryProt.shareIdentity();
         },
 
+        /**
+         * Start recovery replication by requesting a central repository
+         * or a peer in LAN the information they hold.
+         * @constructor
+         */
         StartRecoveryReplication: function () {
             var c = Context.getInstance();
             var comm = Communication.getInstance();
@@ -128,11 +152,21 @@ var ReplicationController = (function () {
             drProtocol.request(peerIdentity);
         },
 
-
+        /**
+         * Prepare the response for a direct replication request.
+         * @param allCounters
+         * @param allRegisters
+         * @returns {*}
+         * @constructor
+         */
         BuildDirectReplicationResponseData: function (allCounters, allRegisters) {
             return buildDirectReplicationResponsePayload(allCounters, allRegisters);
         },
 
+        /**
+         * Initiate replication.
+         * @constructor
+         */
         Init: function (){
             ReplicationController.SharePeerIdentity();
             ReplicationController.StartRecoveryReplication();

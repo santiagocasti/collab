@@ -1,3 +1,7 @@
+/**
+ * Communication class
+ * Defines the protocols used for several types of communication.
+ */
 var Communication = (function () {
 
     var instance;

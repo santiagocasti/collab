@@ -19,17 +19,12 @@ function PeerRecoveryProtocol(port) {
     const DIRECT_REQUEST = 201;
     const DIRECT_RESPONSE = 202;
 
-//    const SERVER_IP = ServerConstants.IP;
-//    const SERVER_PORT = ServerConstants.Port;
-
     CommunicationProtocol.call(this, port);
 
     this.payloadTypes = {
         REQUEST: DIRECT_REQUEST,
         RESPONSE: DIRECT_RESPONSE
     };
-
-//    this.ip = SERVER_IP;
 
     this.name = "PeerRecoveryProtocol";
 }

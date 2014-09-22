@@ -2,6 +2,11 @@ if (typeof module != 'undefined' && typeof require == 'function'){
     var ReplicaIdentity = require('../replication/replicaIdentity.js');
 }
 
+/**
+ * Vector Clock Class constructor
+ * @param data
+ * @constructor
+ */
 function VectorClock(data) {
 
     this.private = {};
@@ -13,6 +18,10 @@ function VectorClock(data) {
 
 }
 
+/**
+ * Increment the vector on the id given.
+ * @param id
+ */
 VectorClock.prototype.increment = function (id) {
 
     if (!this.private.vector.hasOwnProperty(id)) {
@@ -22,6 +31,11 @@ VectorClock.prototype.increment = function (id) {
     this.private.vector[id] += 1;
 };
 
+/**
+ * Get count for the id given.
+ * @param id
+ * @returns {*}
+ */
 VectorClock.prototype.getCount = function (id) {
     if (this.private.vector.hasOwnProperty(id)) {
         return this.private.vector[id];
@@ -30,6 +44,10 @@ VectorClock.prototype.getCount = function (id) {
     return false;
 };
 
+/**
+ * Get total count of the vector.
+ * @returns {number}
+ */
 VectorClock.prototype.getTotalCount = function () {
     var result = 0;
     for (var key in this.private.vector) {
@@ -39,6 +57,11 @@ VectorClock.prototype.getTotalCount = function () {
     return result;
 };
 
+/**
+ * Compare to vector clocks.
+ * @param vc
+ * @returns {number}
+ */
 VectorClock.prototype.compare = function (vc) {
 
     var bigger = 0, equal = 0, smaller = 0;
@@ -80,14 +103,26 @@ VectorClock.prototype.compare = function (vc) {
     }
 };
 
+/**
+ * Get the keys of the vector clock.
+ * @returns {Array}
+ */
 VectorClock.prototype.getKeys = function () {
     return Object.keys(this.private.vector);
 };
 
+/**
+ * Get the internal vector clock representation.
+ * @returns {{}|*}
+ */
 VectorClock.prototype.getInternalVector = function () {
     return this.private.vector;
 }
 
+/**
+ * Return string representation of the vector clock.
+ * @returns {*}
+ */
 VectorClock.prototype.toString = function (){
     var allKeys = [];
     for (var key in this.private.vector){
@@ -98,6 +133,11 @@ VectorClock.prototype.toString = function (){
     return JSON.stringify(allKeys);
 }
 
+/**
+ * Merge the vector clock with the one given and return it in a new object.
+ * @param otherVectorClock
+ * @returns {VectorClock}
+ */
 VectorClock.prototype.merge = function (otherVectorClock) {
 
     var finalCount = {};
@@ -129,10 +169,20 @@ VectorClock.prototype.merge = function (otherVectorClock) {
     return new VectorClock(finalCount);
 };
 
+/**
+ * Is the current vector clock tracking the id given?
+ * @param repId
+ * @returns {boolean}
+ */
 VectorClock.prototype.tracks = function (repId) {
     return this.private.vector.hasOwnProperty(repId);
 };
 
+/**
+ * Force the local counter to track the id given.
+ * Basically, assign it to 0.
+ * @param repId
+ */
 VectorClock.prototype.forceTracking = function (repId) {
     this.private.vector[repId] = 0;
 };
@@ -198,6 +248,9 @@ VectorClock.prototype.purge = function () {
     this.private.vector = newVector;
 };
 
+/**
+ * @returns {*}
+ */
 VectorClock.prototype.toJSON = function () {
     return JSON.stringify(this.private.vector);
 };
@@ -210,6 +263,10 @@ VectorClock.prototype.print = function () {
     log("==============================");
 }
 
+/**
+ * Return a clone of the VectorClock object.
+ * @returns {VectorClock}
+ */
 VectorClock.prototype.clone = function () {
     var data = {};
     for (var key in this.private.vector) {

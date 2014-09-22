@@ -4,7 +4,6 @@
 //});
 
 var app = angular.module('collabApp', []);
-
 app.controller('InteractionCtrl', function ($scope) {
 
     $scope.rows = [];
@@ -177,7 +176,6 @@ app.controller('InteractionCtrl', function ($scope) {
 
                 var randomCol = getRandomInt(1, 8);
                 var randomRow = getRandomInt(1, 14);
-//                var value = String.fromCharCode(97 + getRandomInt(0,25));
                 var value = test.numUpdates;
 
                 console.log("[" + new Date().getTime() + "] Updating cell [" + (randomRow + 1) + "," + randomCol + "] = " + value);
@@ -199,8 +197,8 @@ app.controller('InteractionCtrl', function ($scope) {
     }
 
     /**
-     * This are callbacks for a set of events that might be communicated byt the backend.
-     * The interaction controller subscribes to them and ties callbacks to them.
+     * This are callbacks for a set of events that might be communicated by the backend.
+     * The interaction controller subscribes and ties callbacks to them.
      */
     var fem = FrontEndMessaging.getInstance();
     fem.addCallbackForEvent(FrontEndMessaging.EventType.NEW_DATA, $scope.handleMessage);
@@ -216,6 +214,7 @@ function callback_fy6fhP17Zt2g(message, sender, sendResponse) {
     fem.handleMessage(message, sender, sendResponse);
 }
 
+// Whenever a message is received through message passing, execute the callback
 if (chrome.runtime.onMessage) {
     chrome.runtime.onMessage.addListener(callback_fy6fhP17Zt2g);
 }

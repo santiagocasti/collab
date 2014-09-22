@@ -6,6 +6,14 @@ if (typeof module != 'undefined' && typeof require == 'function') {
     var CRDT = require('../crdt/factory.js');
 }
 
+/**
+ * NewsCastPeerReplicationProtocol Class
+ * This class represents the gossip-based NewsCast peer replication protocol.
+ * It is composed of a NewsCastCache for tracking the items to exchange
+ * during the gossip.
+ * @param port
+ * @constructor
+ */
 function NewsCastPeerReplicationProtocol(port) {
     CommunicationProtocol.call(this, port);
 
@@ -67,10 +75,20 @@ NewsCastPeerReplicationProtocol.prototype = Object.create(CommunicationProtocol.
 
 });
 
+/**
+ * Set the socket to be used during gossip.
+ * @param socketId
+ */
 NewsCastPeerReplicationProtocol.prototype.setSocketId = function (socketId) {
     this.socketId = socketId;
 };
 
+/**
+ * Send a 'type' message to 'peerIP' and call 'callback' on success.
+ * @param peerIp
+ * @param type
+ * @param callback
+ */
 NewsCastPeerReplicationProtocol.prototype.sendMessage = function (peerIp, type, callback) {
     // create the payload
     var payload = NewsCastMessagePayload.new(
@@ -93,7 +111,11 @@ NewsCastPeerReplicationProtocol.prototype.sendMessage = function (peerIp, type, 
     n.sendUDPMessage(this.socketId, peerIp, this.port, msg, callback_rEZpZbnVT8nA);
 };
 
-
+/**
+ * Process the data received from another peer.
+ * @param data
+ * @param deltaT
+ */
 NewsCastPeerReplicationProtocol.prototype.processData = function (data, deltaT) {
 
     var crdt, crdts = [], validItems = [];
@@ -166,6 +188,10 @@ NewsCastPeerReplicationProtocol.prototype.handleMessage = function (rawMsg) {
     }
 };
 
+/**
+ * Replicate the given object to the peers in LAN.
+ * @param o
+ */
 NewsCastPeerReplicationProtocol.prototype.replicate = function (o) {
 
     if (!(o instanceof Counter || o instanceof MVRegister)) {

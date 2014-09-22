@@ -1,5 +1,5 @@
 /**
- *
+ * NetworkInterface class
  * @param ip
  * @param netmask
  * @param name

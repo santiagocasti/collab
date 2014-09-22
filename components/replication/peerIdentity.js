@@ -1,3 +1,10 @@
+/**
+ * PeerIdentity class
+ * It is composed by the replica identity plus the IP address of the peer.
+ * @param ip
+ * @param ri
+ * @constructor
+ */
 function PeerIdentity(ip, ri) {
     this.ipAddress = ip;
     this.replicaIdentity = ri;

@@ -5,6 +5,12 @@ if (typeof module != 'undefined' && typeof require == 'function'){
 }
 
 
+/**
+ * Multi-Value Register Class
+ * @param id - identifier of the object
+ * @param data - initial data, as an array of RegisterValue objects
+ * @constructor
+ */
 function MVRegister(id, data) {
 
     this.private = {};
@@ -13,10 +19,16 @@ function MVRegister(id, data) {
 
 }
 
+/**
+ * @returns {chunkJSON.id|*|id|module.id|result.id|locals.id}
+ */
 MVRegister.prototype.getId = function () {
     return this.private.id;
 }
 
+/**
+ * @returns {Array}
+ */
 MVRegister.prototype.getValue = function () {
     var result = [];
     this.private.data.forEach(function (pair) {
@@ -25,6 +37,10 @@ MVRegister.prototype.getValue = function () {
     return result;
 }
 
+/**
+ * Get a merged vector clock of all the register values.
+ * @returns {VectorClock}
+ */
 MVRegister.prototype.getMergedVectorClock = function () {
     // calculate a vector clock that is the merge
     // of all the existing vectors
@@ -35,6 +51,13 @@ MVRegister.prototype.getMergedVectorClock = function () {
     return vc;
 }
 
+/**
+ * Set the value given to the current object, increasing the vector
+ * clock on the ID of the repID given.
+ * @param repId
+ * @param value
+ * @returns {boolean}
+ */
 MVRegister.prototype.setValue = function (repId, value) {
 
     if (!ReplicaIdentity.IsValidStringIdentity(repId)) {
@@ -52,6 +75,11 @@ MVRegister.prototype.setValue = function (repId, value) {
     this.private.data = [pair];
 }
 
+/**
+ * Compare two objects in terms of vector clocks.
+ * @param register
+ * @returns {*}
+ */
 MVRegister.prototype.compare = function (register) {
     var vc1 = this.getMergedVectorClock();
     var vc2 = register.getMergedVectorClock();
@@ -60,7 +88,13 @@ MVRegister.prototype.compare = function (register) {
 }
 
 
+/**
+ * Get the highest vector clock of a set of MVRegister values.
+ * @param aSetOfPairs
+ * @returns {RegisterValue.vectorClock|*|array.vectorClock}
+ */
 function getHighestFromSetOfPairs(aSetOfPairs) {
+
     var setA = aSetOfPairs;
     setA.sort(function (a, b) {
         var compResult = a.vectorClock.compare(b.vectorClock);
@@ -70,13 +104,18 @@ function getHighestFromSetOfPairs(aSetOfPairs) {
     return setA[0].vectorClock;
 }
 
+/**
+ * This function matches precisely all the elements to see
+ * if the two objects to merge are exactly the same.
+ * @param otherRegister
+ * @returns {boolean}
+ */
 MVRegister.prototype.exactlyEqual = function (otherRegister){
 
     // compare IDs
     if (this.private.id !== otherRegister.private.id){
         return false;
     }
-
 
     // obtain deterministic string format of all the values
     var allValuesThis = [], allValuesOther= [];
@@ -104,6 +143,11 @@ MVRegister.prototype.exactlyEqual = function (otherRegister){
 
 }
 
+/**
+ * Merge two MVRegisters.
+ * @param otherRegister
+ * @returns {*}
+ */
 MVRegister.prototype.merge = function (otherRegister) {
 
     if (!(otherRegister instanceof MVRegister)) {
@@ -152,6 +196,11 @@ MVRegister.prototype.merge = function (otherRegister) {
     return new MVRegister(this.private.id, finalSet);
 }
 
+/**
+ * Get the register values with a vector clock higher than the one provided.
+ * @param lowestVectorClock
+ * @returns {Array}
+ */
 MVRegister.prototype.getHigherValues = function (lowestVectorClock) {
 
     var result = [];
@@ -169,6 +218,9 @@ MVRegister.prototype.getHigherValues = function (lowestVectorClock) {
     return result;
 }
 
+/**
+ * @returns {{}}
+ */
 MVRegister.prototype.toObject = function (){
     var bag = {};
     bag['id'] = this.private.id;
@@ -180,7 +232,9 @@ MVRegister.prototype.toObject = function (){
     return bag;
 }
 
-
+/**
+ * @returns {*}
+ */
 MVRegister.prototype.toJSON = function () {
     return JSON.stringify(this.toObject());
 }

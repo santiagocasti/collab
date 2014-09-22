@@ -1,5 +1,6 @@
 /**
  * Network class
+ * This class interacts with the Chrome APIs
  */
 var Network = (function () {
 

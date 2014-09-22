@@ -5,6 +5,13 @@ if (typeof module != 'undefined' && typeof require == 'function') {
     var ReplicaIdentity = require('../replication/replicaIdentity.js');
 }
 
+/**
+ * CausalBroadcastProtocol Class
+ * In charge of performing replication to the peers in LAN
+ * using causal broadcast, based on IPv4 multicast.
+ * @param port
+ * @constructor
+ */
 function CausalBroadcastProtocol(port) {
     CommunicationProtocol.call(this, port);
 
@@ -59,6 +66,10 @@ CausalBroadcastProtocol.prototype.handleMessage = function (rawMsg, socketId) {
     }
 }
 
+/**
+ * Replicate the given object to the peers in LAN.
+ * @param o
+ */
 CausalBroadcastProtocol.prototype.replicate = function (o) {
 
     if (!(o instanceof Counter) &&

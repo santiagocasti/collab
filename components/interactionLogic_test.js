@@ -20,7 +20,6 @@ describe('Testing InteractionCtrl', function () {
 //        scope.addRow();
 //        expect(scope.rows.length).toBe(1);
 
-
 ////        expect(scope.rows[0].cells[0].value).toBe('a');
 //    });
 

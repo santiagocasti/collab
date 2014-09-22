@@ -1,3 +1,8 @@
+/**
+ * ReplicaIdentity Class
+ * Represents the identity of the peer formed by a unique hash created from the NIC
+ * and the timestamp of when the app booted.
+ */
 var ReplicaIdentity = (function (){
 
     function init(id, timestamp){

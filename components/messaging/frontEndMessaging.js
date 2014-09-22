@@ -1,10 +1,14 @@
+/**
+ * FronendMessaging class
+ */
 var FrontEndMessaging = (function () {
 
     var instance;
     var NEW_DATA_EVENT = 1;
     var UPDATED_USER_COUNT = 2;
     var NEW_CELL_VALUE = 3;
-    var START_TEST = 4
+    var START_TEST = 4;
+
 
     function init() {
 
@@ -71,6 +75,12 @@ var FrontEndMessaging = (function () {
 
         return {
 
+            /**
+             * Handle an incoming message.
+             * @param rawMessage
+             * @param sender
+             * @param sendResponse
+             */
             handleMessage: function (rawMessage, sender, sendResponse) {
 
                 var message = MessagePassing.ParseMessage(rawMessage);
@@ -86,10 +96,22 @@ var FrontEndMessaging = (function () {
 
             },
 
+            /**
+             * Send a new message.
+             * @param message
+             * @param onResponse
+             * @returns {*}
+             */
             sendMessage: function (message, onResponse) {
                 return sendMessage(message, onResponse);
             },
 
+            /**
+             * Add a callback that will be executed when certain event occurs.
+             * @param event
+             * @param callback
+             * @returns {boolean}
+             */
             addCallbackForEvent: function (event, callback) {
                 if (!isValidEvent(event)) {
                     return false;
@@ -105,6 +127,10 @@ var FrontEndMessaging = (function () {
 
     return {
 
+        /**
+         * External classes can subscribe callbacks for these events
+         * to get notified when they occur.
+         */
         EventType: {
             NEW_DATA: NEW_DATA_EVENT,
             UPDATED_USER_COUNT: UPDATED_USER_COUNT,

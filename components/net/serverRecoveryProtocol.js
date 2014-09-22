@@ -8,7 +8,7 @@ if (typeof module != 'undefined' && typeof require == 'function') {
 }
 
 /**
- * Server Revocery Protocol Prototype
+ * Server Recovery Protocol Prototype
  * @constructor
  */
 function ServerRecoveryProtocol() {
