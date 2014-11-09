@@ -44,7 +44,7 @@ function isDirectReplicationRequest(request) {
  */
 function isTestRequest(request) {
     var path = url.parse(request.url).pathname;
-    console.log('['+(new Date().getTime())+'] Request for [' + path + '] from ['+request.connection.remoteAddress+']');
+    console.log('[' + (new Date().getTime()) + '] Request for [' + path + '] from [' + request.connection.remoteAddress + ']');
     var parts = path.split("/");
     return typeof request.method == 'string' &&
             request.method.toLowerCase() == 'get' && // GET request
@@ -56,7 +56,7 @@ function isTestRequest(request) {
  * @param request
  * @returns {boolean}
  */
-function isTimeRequest(request){
+function isTimeRequest(request) {
     var path = url.parse(request.url).pathname;
     var parts = path.split("/");
     return typeof request.method == 'string' &&
@@ -80,9 +80,13 @@ http.createServer(function (request, response) {
     request.on('end', function () {
 //        console.log('POSTed: ' + postData);
 
-        if (isTimeRequest(request)){
-              // handle time request
-              handleTimeRequest(response);
+        if (isTimeRequest(request)) {
+            // handle time request
+            if (url.parse(request.url).query != null) {
+                var sentAt = url.parse(request.url).query.split("=")[1];
+            }
+
+            handleTimeRequest(response, sentAt);
         } else if (isPeerReplicationRequest(request)) {
             // handle peer replication request
             handlePeerReplicationRequest(request, response, postData);
@@ -102,9 +106,9 @@ http.createServer(function (request, response) {
 }).listen(ServerConstants.Port, ServerConstants.IP);
 
 
-function handleTimeRequest(response){
+function handleTimeRequest(response, sentAt) {
     var ts = "" + (new Date().getTime());
-    finishRequest(response, ts);
+    finishRequest(response, ts + "." + sentAt);
 }
 
 function handleTestRequest(response, remoteAddress) {

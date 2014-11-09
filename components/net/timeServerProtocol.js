@@ -21,15 +21,16 @@ TimeServerProtocol.prototype = Object.create(CommunicationProtocol.prototype, {
 
 /**
  * Method for requesting the time from the server
- * @param crdt
+ * @param callback callback
  */
 TimeServerProtocol.prototype.request = function (callback) {
 
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", "http://" + this.ip + ":" + this.port + "/time", true);
+    var sentAt = new Date().getTime();
+    xhr.open("GET", "http://" + this.ip + ":" + this.port + "/time?sent_at=" + sentAt , true);
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4 && xhr.status == 200) {
-            callback(xhr.responseText);
+            callback(xhr.responseText, sentAt);
         }
     };
     xhr.send();

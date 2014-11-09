@@ -50,8 +50,8 @@ function debug(message, object) {
 function log_delivered(hash) {
 
     var p = new TimeServerProtocol();
-    p.request(function (time) {
-        sudo_log("|" + time + "|delivered|" + hash, 4);
+    p.request(function (time, sentAt) {
+        sudo_log("|" + time + "|delivered|" + hash + "|" + (new Date().getTime() - parseInt(sentAt)), 4);
     });
 
 }
@@ -59,8 +59,8 @@ function log_delivered(hash) {
 function log_created(hash, callback) {
 
     var p = new TimeServerProtocol();
-    p.request(function (time) {
-        sudo_log("|" + (time) + "|created|" + hash, 4);
+    p.request(function (time, sentAt) {
+        sudo_log("|" + (time) + "|created|" + hash + "|" + (new Date().getTime() - parseInt(sentAt)), 4);
         if (typeof callback != 'undefined') {
             callback();
         }
