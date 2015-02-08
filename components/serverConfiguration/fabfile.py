@@ -25,6 +25,10 @@ env.roledefs = {
 env.user = "ubuntu"
 
 
+def run_background(cmd, display, sockname="dtach"):
+    return run('export DISPLAY=' + display + ' && dtach -n `mktemp -u /tmp/%s.XXXX` %s' % (sockname, cmd))
+
+
 def safeexec(command, execSudo=False, warningOnlyOnFailure=True):
     with settings(warn_only=warningOnlyOnFailure):
 
@@ -40,54 +44,82 @@ def safeexec(command, execSudo=False, warningOnlyOnFailure=True):
     return result
 
 
-
-@parallel
-def prepare_peer_detailed():
-    ### kill chrome
+def kill_applications():
+    # kill chrome
     safeexec("pkill chrome")
 
-    ### kill ifstat
+    # kill ifstat
     safeexec("pkill ifstat")
 
-    ### update the chrome app code
+
+def update_collab():
+    # update the chrome app code
     safeexec("rm -rf ~/collab && git clone https://github.com/santiagocasti/collab.git")
 
+
+def start_collab():
+    # first obtain the display name based on the eth0 ip address
     ipAddress = safeexec("ifconfig eth0 | awk '/inet addr/ {gsub(\"addr:\", \"\", $2); print $2}'")
     splittedIp = ipAddress.split(".")
     display = "ip-" + splittedIp[0] + "-" + splittedIp[1] + "-" + splittedIp[2] + "-" + splittedIp[3] + ":1"
-    print("Display: "+display)
-
-    safeexec("sleep 2")
-
-    ## launch the app
-    result = safeexec("export DISPLAY="+display+"; nohup google-chrome --load-and-launch-app=/home/ubuntu/collab/ &")
-    print("Result was["+result+"]")
-
-    #
-    # create the folder for all the data
-    ipAddress = safeexec("ifconfig edge0 | awk '/inet addr/ {gsub(\"addr:\", \"\", $2); print $2}'")
-    date = safeexec("date +'%Y-%m-%d_%H-%M-%S'")
-
-    folderName = ipAddress + "_" + date
-    folderPath = "/home/ubuntu/" + folderName
-    safeexec("mkdir " + folderPath)
-
-    # this file name has to change for every peer
-    netstatFileName = "netstat_"+ ipAddress +".txt"
-    netstatFilePath = folderPath + "/" + netstatFileName
-    safeexec("touch "+netstatFilePath)
+    print("Display: " + display)
 
 
+
+    # then launch the app
+    result = run_background(
+        "google-chrome --load-and-launch-app=/home/ubuntu/collab/", display)
+    print("Result was[" + result + "]")
+
+
+def delete_logs():
     # remove previous netstat files
     safeexec("rm /home/ubuntu/netstat*", True)
 
     # remove downloaded files
     safeexec("rm -f ~/Downloads/*", True)
 
+    # remove previous log folder
+    ipAddress = safeexec("ifconfig edge0 | awk '/inet addr/ {gsub(\"addr:\", \"\", $2); print $2}'")
+    safeexec("rm -f ~r/" + ipAddress + "/*", True)
+
+
+def create_folders():
+    # obtain the ip address and the date
+    ipAddress = safeexec("ifconfig edge0 | awk '/inet addr/ {gsub(\"addr:\", \"\", $2); print $2}'")
+    date = safeexec("date +'%Y-%m-%d_%H-%M-%S'")
+
+    # create folder name and path
+    folderName = ipAddress + "_" + date
+    folderPath = "/home/ubuntu/" + folderName
+    safeexec("mkdir " + folderPath)
+
+    # this file name has to change for every peer
+    netstatFileName = "netstat_" + ipAddress + ".txt"
+    netstatFilePath = folderPath + "/" + netstatFileName
+    safeexec("touch " + netstatFilePath)
+
+    start_ifstat(netstatFilePath)
+
+
+def start_ifstat(netstatFilePath):
     # start ifstat
     safeexec("ifstat -i edge0 -ntwb 1 >> " + netstatFilePath + " &", True)
 
-    print(ipAddress + safeexec("date"))
+
+@parallel
+def prepare_peer_detailed():
+    kill_applications()
+
+    delete_logs()
+
+    update_collab()
+
+    safeexec("sleep 2")
+
+    start_collab()
+
+    create_folders()
 
 
 def prepare_server_detailed():
