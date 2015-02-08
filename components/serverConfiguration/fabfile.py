@@ -130,21 +130,19 @@ def prepare_server_detailed():
     safeexec("pkill nodejs", True)
 
     # start server side main thread
-    safeexec("nodejs /home/ubuntu/collab/components/serverSide/main.js &")
+    run_background("nodejs /home/ubuntu/collab/components/serverSide/main.js")
 
     # start experiment
-    safeexec("nodejs /home/ubuntu/collab/components/serverSide/triggerTestStart.js")
+    run_background("nodejs /home/ubuntu/collab/components/serverSide/triggerTestStart.js")
 
 
 @parallel
 @roles('peers')
 def prepare_peer():
-    env.always_use_pty = False
-    #env.hosts = env.roledefs["peers"]
+    #env.always_use_pty = False
     prepare_peer_detailed()
 
 
 @roles('server')
 def prepare_server():
-#env.roles = ['server']
     prepare_server_detailed()
