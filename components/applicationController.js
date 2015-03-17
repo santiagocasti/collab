@@ -96,7 +96,7 @@ var ApplicationController = (function () {
                 ReplicationController.Init();
 
                 // start checking for experiments to run
-                //c.startTestCheck();
+                c.startTestCheck();
             },
 
             // launch the necessary processes associated with application closing
