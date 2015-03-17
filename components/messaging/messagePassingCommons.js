@@ -24,6 +24,7 @@ var MessagePassing = (function () {
     const DIRECT_REPLICATION_REQUEST_MESSAGE_TYPE = 8;
     const NEW_CELL_VALUE_MESSAGE_TYPE= 9;
     const START_TEST_MESSAGE_TYPE = 10;
+    const SAVE_LOG_FILE = 11;
 
     return {
 
@@ -63,7 +64,8 @@ var MessagePassing = (function () {
             OPENED_WINDOW: OPENED_WINDOW_MESSAGE_TYPE,
             PRINT_PEER_LIST: PRINT_PEER_LIST_MESSAGE_TYPE,
             PERFORM_DIRECT_REPLICATION_REQUEST: DIRECT_REPLICATION_REQUEST_MESSAGE_TYPE,
-            START_TEST: START_TEST_MESSAGE_TYPE
+            START_TEST: START_TEST_MESSAGE_TYPE,
+            SAVE_LOG_FILE: SAVE_LOG_FILE
         }
 
     }

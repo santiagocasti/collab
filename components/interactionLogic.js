@@ -65,6 +65,16 @@ app.controller('InteractionCtrl', function ($scope) {
     }
 
     /**
+     * Simple function to download the log file
+     */
+    $scope.downloadLogFile = function () {
+        var msg = MessagePassing.MessageToBack(MessagePassing.MessageTypes.SAVE_LOG_FILE, $scope.messageContent);
+        console.log("Requesting log file download.");
+        var fem = FrontEndMessaging.getInstance();
+        fem.sendMessage(msg);
+    }
+
+    /**
      * Method that just sets up the cells values
      */
     $scope.setupSpreadsheet = function () {

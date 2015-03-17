@@ -69,6 +69,9 @@ var BackEndMessaging = (function () {
                         var content = message.content;
                         appController.updateCell(content.row, content.col, content.value);
                     break;
+                case MessagePassing.MessageTypes.SAVE_LOG_FILE:
+                        console.downloadLogFile();
+                    break;
                 default:
                     debug("Received message that should not handle [" + message.type + "]: ", message);
             }
