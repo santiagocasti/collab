@@ -69,12 +69,12 @@ function log_created(hash, callback) {
 }
 
 function sudo_log(message, depth) {
-    var head = createMsgHead(depth, debug);
+    //var head = createMsgHead(depth, debug);
 
     var c = Context.getInstance();
     c.addMsg(message);
 
-    console.log(head + message);
+    //console.log(head + message);
 }
 
 (function (console) {

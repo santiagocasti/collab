@@ -27,7 +27,7 @@ TimeServerProtocol.prototype.request = function (callback) {
 
     var xhr = new XMLHttpRequest();
     var sentAt = new Date().getTime();
-    xhr.open("GET", "http://" + this.ip + ":" + this.port + "/time?sent_at=" + sentAt , true);
+    xhr.open("GET", "http://" + this.ip + ":" + this.port + "/time" , true);
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4 && xhr.status == 200) {
             callback(xhr.responseText, sentAt);

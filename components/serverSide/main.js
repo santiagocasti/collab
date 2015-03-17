@@ -81,12 +81,7 @@ http.createServer(function (request, response) {
 //        console.log('POSTed: ' + postData);
 
         if (isTimeRequest(request)) {
-            // handle time request
-            if (url.parse(request.url).query != null) {
-                var sentAt = url.parse(request.url).query.split("=")[1];
-            }
-
-            handleTimeRequest(response, sentAt);
+            handleTimeRequest(response);
         } else if (isPeerReplicationRequest(request)) {
             // handle peer replication request
             handlePeerReplicationRequest(request, response, postData);
@@ -106,9 +101,8 @@ http.createServer(function (request, response) {
 }).listen(ServerConstants.Port, ServerConstants.IP);
 
 
-function handleTimeRequest(response, sentAt) {
-    var ts = "" + (new Date().getTime());
-    finishRequest(response, ts + "." + sentAt);
+function handleTimeRequest(response) {
+    finishRequest(response, (new Date().getTime()));
 }
 
 function handleTestRequest(response, remoteAddress) {
