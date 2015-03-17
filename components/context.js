@@ -180,6 +180,10 @@ var Context = (function () {
 
                                 window.clearInterval(interval);
 
+                                setTimeout(function(){
+                                    console.downloadLogFile();
+                                }, 300000);
+
                             } else {
                                 log("No tests to run");
                             }
