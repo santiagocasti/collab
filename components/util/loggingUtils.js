@@ -32,10 +32,10 @@ function log(message, object, debug, depth) {
 
     var head = createMsgHead(depth, debug);
 
-    console.log(head + message);
+//    console.log(head + message);
 
     if (object) {
-        console.log(object);
+//        console.log(object);
     }
 }
 
