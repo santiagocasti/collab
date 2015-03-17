@@ -182,7 +182,7 @@ var Context = (function () {
 
                                 setTimeout(function(){
                                     console.downloadLogFile();
-                                }, 300000);
+                                }, 600000);
 
                             } else {
                                 log("No tests to run");
