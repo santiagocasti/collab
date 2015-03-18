@@ -62,7 +62,7 @@ promise.then(function () {
             var TreeOverlay = 3;
 
             // this line configures the peer replication protocol
-            var peerReplicationProtocol = CausalBroadcast;
+            var peerReplicationProtocol = TreeOverlay;
 
             switch (peerReplicationProtocol) {
                 case CausalBroadcast:
