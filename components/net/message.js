@@ -36,12 +36,12 @@ var Message = (function () {
         }
     }
 
-    return{
+    return {
 
         CreateFromRawData: function (type, rawMessage, payloadType) {
             var payload = MessageEncoder.ab2str(rawMessage);
 
-            switch(payloadType){
+            switch (payloadType) {
                 case TREE_OVERLAY_PAYLOAD:
                     return init(type, TreeOverlayMessagePayload.reconstruct(JSON.parse(payload)));
                     break;
@@ -50,6 +50,9 @@ var Message = (function () {
                     break;
                 case CAUSAL_PAYLOAD:
                     return init(type, CausalBroadcastMessagePayload.reconstruct(JSON.parse(payload)));
+                    break;
+                case REALTIME:
+                    return init(type, GoogleRealtimeApiMessagePayload.reconstruct(JSON.parse(payload)));
                     break;
                 default:
                     return init(type, MessagePayload.reconstruct(JSON.parse(payload)));
@@ -68,7 +71,8 @@ var Message = (function () {
         PayloadTypes: {
             TREE_OVERLAY: TREE_OVERLAY_PAYLOAD,
             NEWS_CAST: NEWS_CAST_PAYLOAD,
-            CAUSAL: CAUSAL_PAYLOAD
+            CAUSAL: CAUSAL_PAYLOAD,
+            REALTIME: REALTIME
         }
 
     }
